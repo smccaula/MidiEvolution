@@ -10,3 +10,7 @@ C:\Users\smccaula\Documents\Visual Studio 2010\Projects\AScale_III\as_tests\bin\
 C:\Users\smccaula\Documents\Visual Studio 2010\Projects\AScale_III\as_tests\bin\Debug\as_tests.pdb
 C:\Users\smccaula\Documents\Visual Studio 2010\Projects\AScale_III\as_tests\obj\x86\Debug\as_tests.exe
 C:\Users\smccaula\Documents\Visual Studio 2010\Projects\AScale_III\as_tests\obj\x86\Debug\as_tests.pdb
+U:\git\MidiEvolution\as_tests\bin\Debug\as_tests.exe
+U:\git\MidiEvolution\as_tests\bin\Debug\as_tests.pdb
+U:\git\MidiEvolution\as_tests\obj\x86\Debug\as_tests.exe
+U:\git\MidiEvolution\as_tests\obj\x86\Debug\as_tests.pdb

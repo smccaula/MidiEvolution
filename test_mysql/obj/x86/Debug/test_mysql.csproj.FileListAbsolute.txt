@@ -19,3 +19,8 @@ C:\Users\smccaula\Documents\Visual Studio 2010\Projects\AScale_III\bin\test_mysq
 C:\Users\smccaula\Documents\Visual Studio 2010\Projects\AScale_III\bin\test_mysql.pdb
 C:\Users\smccaula\Documents\Visual Studio 2010\Projects\AScale_III\test_mysql\obj\x86\Debug\test_mysql.exe
 C:\Users\smccaula\Documents\Visual Studio 2010\Projects\AScale_III\test_mysql\obj\x86\Debug\test_mysql.pdb
+U:\git\MidiEvolution\test_mysql\obj\x86\Debug\test_mysql.exe
+U:\git\MidiEvolution\test_mysql\obj\x86\Debug\test_mysql.pdb
+U:\git\MidiEvolution\bin\test_mysql.exe
+U:\git\MidiEvolution\bin\test_mysql.pdb
+U:\git\MidiEvolution\test_mysql\obj\x86\Debug\test_mysql.csprojResolveAssemblyReference.cache

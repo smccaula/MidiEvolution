@@ -15,7 +15,6 @@ namespace as_clear
     {
         static void Main(string[] args)
         {
-
             string jobName = "test";
             int featureCount = 18599;
             int popCount = 100;

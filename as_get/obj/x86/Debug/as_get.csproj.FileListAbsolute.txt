@@ -17,3 +17,7 @@ C:\Users\smccaula\Documents\Visual Studio 2010\Projects\AScale_III\as_get\obj\x8
 C:\Users\smccaula\Documents\Visual Studio 2010\Projects\AScale_III\as_get\obj\x86\Debug\as_get.pdb
 C:\Users\smccaula\Documents\Visual Studio 2010\Projects\AScale_III\bin\as_get.exe
 C:\Users\smccaula\Documents\Visual Studio 2010\Projects\AScale_III\bin\as_get.pdb
+U:\git\MidiEvolution\bin\as_get.exe
+U:\git\MidiEvolution\bin\as_get.pdb
+U:\git\MidiEvolution\as_get\obj\x86\Debug\as_get.exe
+U:\git\MidiEvolution\as_get\obj\x86\Debug\as_get.pdb

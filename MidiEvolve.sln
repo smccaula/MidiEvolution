@@ -19,8 +19,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "as_wave", "as_wave\as_wave.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "as_net", "as_net\as_net.csproj", "{45537FE3-17FD-43C5-93CF-8A5EB9375DCC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "as_tests", "as_tests\as_tests.csproj", "{5C3E5A99-9B64-44E9-8EC1-838D43D5D1A9}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "as_compare", "as_compare\as_compare.csproj", "{510D9745-BBC9-4DAD-BDAF-88F6758FA3E6}"
 EndProject
 Global
@@ -65,10 +63,6 @@ Global
 		{45537FE3-17FD-43C5-93CF-8A5EB9375DCC}.Debug|x86.Build.0 = Debug|x86
 		{45537FE3-17FD-43C5-93CF-8A5EB9375DCC}.Release|x86.ActiveCfg = Release|x86
 		{45537FE3-17FD-43C5-93CF-8A5EB9375DCC}.Release|x86.Build.0 = Release|x86
-		{5C3E5A99-9B64-44E9-8EC1-838D43D5D1A9}.Debug|x86.ActiveCfg = Debug|x86
-		{5C3E5A99-9B64-44E9-8EC1-838D43D5D1A9}.Debug|x86.Build.0 = Debug|x86
-		{5C3E5A99-9B64-44E9-8EC1-838D43D5D1A9}.Release|x86.ActiveCfg = Release|x86
-		{5C3E5A99-9B64-44E9-8EC1-838D43D5D1A9}.Release|x86.Build.0 = Release|x86
 		{510D9745-BBC9-4DAD-BDAF-88F6758FA3E6}.Debug|x86.ActiveCfg = Debug|x86
 		{510D9745-BBC9-4DAD-BDAF-88F6758FA3E6}.Debug|x86.Build.0 = Debug|x86
 		{510D9745-BBC9-4DAD-BDAF-88F6758FA3E6}.Release|x86.ActiveCfg = Release|x86

@@ -34,9 +34,7 @@ namespace as_launch
             Random random = new Random();
             Process[] getProcess = new Process[512];
             int launchCtr = 0;
-        //    int prevCtr = 0;
             int runLoop = 1;
-       //     int deleteCounter = 0;
             int unFlag = 0;
 
             if (args.Length > 0) // first arg should be mandatory - job name
@@ -97,7 +95,6 @@ namespace as_launch
             }
 
             jobType = TestJobValidity(ref myConnection, jobName);
-//            myUniqueID = GetJobID(ref myConnection, jobName);
             myUniqueID = random.Next(1, 32000);
 
             Console.WriteLine("starting process ID : " + myUniqueID.ToString());
@@ -178,29 +175,7 @@ namespace as_launch
                         }
                     }
                 }
-           //     if (!prevCtr.Equals(launchCtr))
-           //     {
-           //         prevCtr = launchCtr;
-           //     }
-
-                // delete dead 'busy' records
-                 //   unFlag = (launchCtr - maxConcurrent);
-                 //   unflagCommand.Parameters.Clear();
-                 //   unflagCommand.Parameters.AddWithValue("@parmID", myUniqueID);
-                 //   unflagCommand.Parameters.AddWithValue("@parmGen", unFlag);
-                 //   unflagCommand.ExecuteNonQuery();
-                 //   unflagCommand.Dispose();
             }
-
-//            int finalGen = GetTopScore(ref myConnection, elapsedSeconds, jobName, launchCtr);
-//
-//            MySqlCommand updateGen = new MySqlCommand("update run_data set generation_count = @genParm " +
-//" where job_name = @jobParm and job_index = @ndxParm ", myConnection);
-//            updateGen.Parameters.AddWithValue("@jobParm", jobName);
-//            updateGen.Parameters.AddWithValue("@genParm", finalGen);
-//            updateGen.Parameters.AddWithValue("@ndxParm", myUniqueID);
-
-//            updateGen.ExecuteNonQuery();
 
             // wait for launched processes to finish
 
@@ -223,14 +198,6 @@ namespace as_launch
 
                 }
             }
-
-//            unFlag = (launchCtr + 1);
-
-//            unflagCommand.Parameters.Clear();
-//            unflagCommand.Parameters.AddWithValue("@parmID", myUniqueID);
-//            unflagCommand.Parameters.AddWithValue("@parmGen", unFlag);
-//            unflagCommand.ExecuteNonQuery();
-//            unflagCommand.Dispose();
 
             Console.WriteLine("done.");
         }
@@ -266,7 +233,6 @@ namespace as_launch
             }
 
             if ((bestGeneration > GlobalVar.savedGeneration))
-            //    if ((bestGeneration > GlobalVar.savedGeneration) || (foundScore > GlobalVar.savedScore))
                 {
                 pctDone = (Convert.ToDouble(1.0*foundScore) / (1.0*Convert.ToDouble(bestScore)));
                 Console.WriteLine(launchCtr.ToString() + "," + elapsedSeconds.ToString() + "," + bestGeneration.ToString() + "," + foundScore.ToString() + "," + bestScore.ToString() 
@@ -274,12 +240,6 @@ namespace as_launch
                 GlobalVar.savedGeneration =  bestGeneration;
                 GlobalVar.savedScore = foundScore;
             }
-
-      //      if ((bestGeneration < 10) && (foundScore > (bestScore * 0.75)))
-      //          bestGeneration = -1;
-
-      //      if (bestGeneration > 1200)
-      //          bestGeneration = -1;
 
             if (bestScore > foundScore)
                 bestGeneration = 0;
@@ -320,25 +280,6 @@ namespace as_launch
         static int GetJobID(ref MySqlConnection myConnection, string jobName)
         {
             int jobID  = 0;
-
-//            MySqlCommand myCommand = new MySqlCommand("select job_index from run_data where job_name = @Param1 "
-//                + " and generation_count = 0", myConnection);
-//            myCommand.Parameters.AddWithValue("@Param1", jobName);
-
-//            try
-//            {
-//                MySqlDataReader myReader = myCommand.ExecuteReader();
-
-//                while (myReader.Read())
-//                {
-//                    jobID = myReader.GetInt32("job_index");
-//                }
-//                myReader.Close();
-//            }
-//            catch (Exception e)
-//            {
-//                Console.WriteLine(e.ToString());
-//            }
 
             return (jobID);
         }

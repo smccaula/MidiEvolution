@@ -21,6 +21,9 @@ $RECYCLE.BIN/
 # Media files
 *.wav
 
+# Visual Studio files
+*.cache
+
 # Windows shortcuts
 *.lnk
 
