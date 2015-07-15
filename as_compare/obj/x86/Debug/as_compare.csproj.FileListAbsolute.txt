@@ -1,0 +1,8 @@
+C:\Users\smccaula\Documents\Visual Studio 2010\Projects\AScale_II\as_compare\bin\Debug\as_compare.exe
+C:\Users\smccaula\Documents\Visual Studio 2010\Projects\AScale_II\as_compare\bin\Debug\as_compare.pdb
+C:\Users\smccaula\Documents\Visual Studio 2010\Projects\AScale_II\as_compare\obj\x86\Debug\as_compare.exe
+C:\Users\smccaula\Documents\Visual Studio 2010\Projects\AScale_II\as_compare\obj\x86\Debug\as_compare.pdb
+C:\Users\smccaula\Documents\Visual Studio 2010\Projects\AScale_III\as_compare\bin\Debug\as_compare.exe
+C:\Users\smccaula\Documents\Visual Studio 2010\Projects\AScale_III\as_compare\bin\Debug\as_compare.pdb
+C:\Users\smccaula\Documents\Visual Studio 2010\Projects\AScale_III\as_compare\obj\x86\Debug\as_compare.exe
+C:\Users\smccaula\Documents\Visual Studio 2010\Projects\AScale_III\as_compare\obj\x86\Debug\as_compare.pdb

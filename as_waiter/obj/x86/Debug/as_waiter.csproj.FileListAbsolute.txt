@@ -1,0 +1,17 @@
+C:\Users\smccaula\Documents\Visual Studio 2010\Projects\AScale\bin\as_waiter.exe
+C:\Users\smccaula\Documents\Visual Studio 2010\Projects\AScale\bin\as_waiter.pdb
+C:\Users\smccaula\Documents\Visual Studio 2010\Projects\AScale\as_waiter\obj\x86\Debug\as_waiter.exe
+C:\Users\smccaula\Documents\Visual Studio 2010\Projects\AScale\as_waiter\obj\x86\Debug\as_waiter.pdb
+C:\Users\smccaula\Documents\Visual Studio 2010\Projects\AScale_LT\as_waiter\obj\x86\Debug\as_waiter.exe
+C:\Users\smccaula\Documents\Visual Studio 2010\Projects\AScale_LT\as_waiter\obj\x86\Debug\as_waiter.pdb
+C:\Users\smccaula\Documents\Visual Studio 2010\Projects\AScale_LT\bin\as_waiter.exe
+C:\Users\smccaula\Documents\Visual Studio 2010\Projects\AScale_LT\bin\as_waiter.pdb
+C:\Users\smccaula\Documents\Visual Studio 2010\Projects\AScale_II\bin\as_waiter.exe
+C:\Users\smccaula\Documents\Visual Studio 2010\Projects\AScale_II\bin\as_waiter.pdb
+C:\Users\smccaula\Documents\Visual Studio 2010\Projects\AScale_II\as_waiter\obj\x86\Debug\as_waiter.exe
+C:\Users\smccaula\Documents\Visual Studio 2010\Projects\AScale_II\as_waiter\obj\x86\Debug\as_waiter.pdb
+C:\Users\smccaula\Documents\Visual Studio 2010\Projects\AScale_II\as_waiter\obj\x86\Debug\as_waiter.csprojResolveAssemblyReference.cache
+C:\Users\smccaula\Documents\Visual Studio 2010\Projects\AScale_III\bin\as_waiter.exe
+C:\Users\smccaula\Documents\Visual Studio 2010\Projects\AScale_III\bin\as_waiter.pdb
+C:\Users\smccaula\Documents\Visual Studio 2010\Projects\AScale_III\as_waiter\obj\x86\Debug\as_waiter.exe
+C:\Users\smccaula\Documents\Visual Studio 2010\Projects\AScale_III\as_waiter\obj\x86\Debug\as_waiter.pdb

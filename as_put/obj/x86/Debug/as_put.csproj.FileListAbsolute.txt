@@ -1,0 +1,5 @@
+c:\users\smccaula\documents\visual studio 2010\Projects\AScale\as_put\bin\Debug\as_put.exe
+c:\users\smccaula\documents\visual studio 2010\Projects\AScale\as_put\bin\Debug\as_put.pdb
+c:\users\smccaula\documents\visual studio 2010\Projects\AScale\as_put\obj\x86\Debug\ResolveAssemblyReference.cache
+c:\users\smccaula\documents\visual studio 2010\Projects\AScale\as_put\obj\x86\Debug\as_put.exe
+c:\users\smccaula\documents\visual studio 2010\Projects\AScale\as_put\obj\x86\Debug\as_put.pdb

@@ -1,0 +1,665 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Data;
+using System.IO;
+using System.Xml;
+using System.Collections;
+
+namespace as_wave
+{
+    class as_wave
+    {
+        const double TAU = 2 * Math.PI;
+        const double samplesSecond = 192000.0;
+        const double maxConcurrent = 2;
+        const double sineInterval = 256;
+        const double lowestFreq = 0.001;
+        const double lowestAmp = 0.001;
+
+        const int maxLevel = 2;
+        const int maxWave = 4;
+        const int framesThisRun = 376;
+        const int maxSamples = 5898240; // 30 seconds max
+
+        const double lowestProcessedFrequency = 13.5;
+
+        // need to recalculate for 2-byte amplitude
+//        const double maxAmplitude = (32.0 * 1024.0) / (255.0 * (maxConcurrent/2) * layers);   
+
+        const double maxDuration = maxConcurrent * sineInterval;
+
+        public static class GlobalVar
+        {
+            public static double[] freqLookup = new double[256];
+            public static double[] ampLookup = new double[256]; 
+            public static string arg0 = "";
+            public static long[] leftmono = new long[maxSamples]; 
+            public static int samples = 0;
+
+            public static double[] runningWave = new double[maxSamples];
+            public static long[] calcWave = new long[maxSamples];
+            public static long[] diffWave = new long[maxSamples];
+
+            public static int[] levelCounter = new int[framesThisRun];
+
+            public static int[,] levelOffset = new int[framesThisRun, maxLevel];
+            public static int[,] levelAmpActive = new int[framesThisRun, maxLevel];
+            public static int[,] levelFreqActive = new int[framesThisRun, maxLevel];
+
+            public static int[, ,] waveAmplitude = new int[framesThisRun, maxLevel, maxWave];
+            public static int[, ,] waveFrequency = new int[framesThisRun, maxLevel, maxWave];
+
+            public static int frameCount = 0;
+            public static int testCount = 0;
+            public static int myGeneration = 0;
+            public static long myScore = 0;
+            public static long bestScore = 0;
+            public static Random random = new Random();
+            public static int soundPos = 0;
+
+
+        }
+
+        static void Main(string[] args)
+        {
+            InitFreq();
+            InitAmp();
+
+            string XMLfile = "solution.xml";
+            openWav("target.wav");
+
+            if (args.Length > 0)
+            {
+                XMLfile = args[0];
+                GlobalVar.arg0 = args[0];
+            }
+
+            if (String.IsNullOrEmpty(XMLfile))
+            {
+                Console.WriteLine(".X3." + XMLfile + ".");
+                return;
+            }
+
+            bool openXML = false;
+            int XMLTry = 0;
+            while (!openXML)
+            {
+                XMLTry++;
+            try
+            {
+                openXML = true;
+                ImportXMLfile(XMLfile);
+            }
+            catch
+            {
+                System.Threading.Thread.Sleep(100);
+                openXML = false;
+            }
+            if (XMLTry > 5)
+            {
+                return;
+            }
+            }
+
+ //           Console.WriteLine(".as_wave.got." + XMLfile + ".");
+            CalculateNewWave();
+
+            AlternateScore();
+
+        //   if (0 < 999999999)
+           if (GlobalVar.myScore > GlobalVar.bestScore) //dsm
+            {
+                 WriteBestFile();
+            }
+
+
+            // write out xml
+            bool outputXML = false;
+            int XMLOut = 0;
+            while (!outputXML)
+            {
+                XMLOut++;
+                try
+                {
+                    outputXML = true;
+                    if (ExportXMLfile(XMLfile) > 0)
+                    {
+                        outputXML = false;
+                        System.Threading.Thread.Sleep(100);
+                    }
+                }
+                catch
+                {
+                    System.Threading.Thread.Sleep(100);
+                    outputXML = false;
+                }
+                if (XMLOut > 5)
+                    return;
+            }
+
+
+
+            ExportXMLfile(XMLfile);
+   //         Console.WriteLine(".as_wave.sent." + XMLfile + ".");
+
+    //      System.Threading.Thread.Sleep(2500000);
+
+        }
+
+        static void InitFreq()
+        {
+
+            double freqInterval = 1.07177346253629;
+
+            GlobalVar.freqLookup[0] = 0.0;
+            GlobalVar.freqLookup[1] = lowestFreq;
+
+            for (int i = 2; i < (256); i++)
+                GlobalVar.freqLookup[i] = GlobalVar.freqLookup[i - 1] * freqInterval;
+
+        }
+
+        static void InitAmp()
+        {
+
+            double ampInterval = 1.09110214174392;
+
+            GlobalVar.ampLookup[0] = 0.0;
+            GlobalVar.ampLookup[1] = lowestAmp;
+
+            for (int i = 2; i < (256); i++)
+                GlobalVar.ampLookup[i] = GlobalVar.ampLookup[i - 1] * ampInterval;
+
+        }
+
+        static void CalculateNewWave()
+        {
+            int featureNDX = 0;
+
+            double fStart = 0.0;
+            double fCenter = 0.0;
+            double fFrequency = 0.0; 
+            double fAmplitude = 0.0; 
+            int fAttack = 0; 
+            int fSustain = 0;
+            int fRelease = 0; 
+            int fOffset = 0;
+            int fAmpActive = 0;
+            int fFreqActive = 0;
+
+            double calcSine;
+
+            for (int i = 0; i < (GlobalVar.samples); i++)
+            {
+                GlobalVar.runningWave[i] = 0.0;
+            }
+
+
+            // now hard coded in const
+            GlobalVar.frameCount = 
+                Convert.ToInt32(GlobalVar.samples / sineInterval) + 1;
+               
+// dsm
+ //        Console.WriteLine("samples - " + GlobalVar.samples.ToString() + " features - " + GlobalVar.frameCount.ToString() 
+ //            + " interval - " + sineInterval.ToString()
+ //            + " duration - " + maxDuration.ToString());
+ //           System.Threading.Thread.Sleep(25000);
+
+//            fCenter = 128;  // change innext version to (lowestFreq/samplesSec) /2 (to prevent negative starts)
+            fCenter = (sineInterval) /2;  // check this
+
+    //        Console.WriteLine("c " + fCenter.ToString() + " e " + extraSamples.ToString() + " n " + noteSamples.ToString());
+
+            featureNDX = 0;
+
+            // check for valid values
+
+            for (int frameX = 0; frameX < framesThisRun; frameX++)
+            {
+                while (GlobalVar.levelCounter[frameX] > maxLevel)
+                    GlobalVar.levelCounter[frameX] = GlobalVar.levelCounter[frameX] - maxLevel;
+                if (GlobalVar.levelCounter[frameX] < 0) 
+                    GlobalVar.levelCounter[frameX] = 0;
+                for (int levelX = 0; levelX < maxLevel; levelX++)
+                {
+                    if (GlobalVar.levelOffset[frameX, levelX] > 255)
+                        GlobalVar.levelOffset[frameX, levelX] = 255;
+                    if (GlobalVar.levelOffset[frameX, levelX] < 0)
+                        GlobalVar.levelOffset[frameX, levelX] = 0;
+                    if (GlobalVar.levelAmpActive[frameX, levelX] > 255)
+                        GlobalVar.levelAmpActive[frameX, levelX] = 255;
+                    if (GlobalVar.levelAmpActive[frameX, levelX] < 0)
+                        GlobalVar.levelAmpActive[frameX, levelX] = 0;
+                    if (GlobalVar.levelFreqActive[frameX, levelX] > 255)
+                        GlobalVar.levelFreqActive[frameX, levelX] = 255;
+                    if (GlobalVar.levelFreqActive[frameX, levelX] < 0)
+                        GlobalVar.levelFreqActive[frameX, levelX] = 0; 
+                    for (int waveX = 0; waveX < maxWave; waveX++)
+                    {
+                        if (GlobalVar.waveAmplitude[frameX, levelX, waveX] > 255)
+                            GlobalVar.waveAmplitude[frameX, levelX, waveX] = 255;
+                        if (GlobalVar.waveAmplitude[frameX, levelX, waveX] < 0)
+                            GlobalVar.waveAmplitude[frameX, levelX, waveX] = 0;
+                        if (GlobalVar.waveFrequency[frameX, levelX, waveX] > 255)
+                            GlobalVar.waveFrequency[frameX, levelX, waveX] = 255;
+                        if (GlobalVar.waveFrequency[frameX, levelX, waveX] < 0)
+                            GlobalVar.waveFrequency[frameX, levelX, waveX] = 0;
+                    }
+                }
+
+            }
+
+            int activeLevels = 0;
+
+            for (int frameX = 0; frameX < framesThisRun; frameX++)
+            {
+                fFrequency = 0;
+                fAmplitude = 0;
+                fAttack = 0;
+                fRelease = 0;
+                fOffset = 0;
+                fAmpActive = 0;
+                fFreqActive = 0;
+
+                activeLevels = GlobalVar.levelCounter[frameX];
+
+                for (int levelX = 0; levelX < activeLevels; levelX++)
+                {
+                    fOffset = GlobalVar.levelOffset[frameX, levelX];
+
+                    fAmpActive = GlobalVar.levelAmpActive[frameX, levelX];
+                    fFreqActive = GlobalVar.levelFreqActive[frameX, levelX];
+
+                    BitArray ampBits = new BitArray(BitConverter.GetBytes(fAmpActive).ToArray());
+                    BitArray freqBits = new BitArray(BitConverter.GetBytes(fFreqActive).ToArray());
+
+                    for (int waveX = 0; waveX < maxWave; waveX++)
+                    {
+                        // if flagged as active
+                        if (ampBits[waveX])
+                        {
+                            fAmplitude = fAmplitude + ((double)GlobalVar.ampLookup[GlobalVar.waveAmplitude[frameX, levelX, waveX]]);
+                        }
+                        if (freqBits[waveX])
+                        {
+                            fFrequency = fFrequency + ((double)GlobalVar.freqLookup[GlobalVar.waveAmplitude[frameX, levelX, waveX]]);
+                        }
+                    }
+
+                    int cycleInterval = 0;
+
+                    if (fFrequency > lowestProcessedFrequency)
+                    {
+                        cycleInterval = Convert.ToInt16(samplesSecond / fFrequency);
+                    }
+
+                    fSustain = cycleInterval;
+
+                    // no
+                    fStart = fCenter - (fSustain / 2) + fOffset;
+
+                    int sineX = 0;
+                    for (int wx = Convert.ToInt32(fStart); wx < Convert.ToInt32(fStart + fSustain); wx++)
+                    {
+                        if (wx > -1)
+                        {
+                            calcSine = (TAU * fFrequency * (double)(sineX)) / samplesSecond;
+                            calcSine = (fAmplitude) * Math.Sin(calcSine);
+                            GlobalVar.runningWave[wx] = GlobalVar.runningWave[wx] + calcSine;
+                            sineX++;
+                        }
+                    }
+                }
+                fCenter = fCenter + sineInterval;
+            }
+
+            for (int i = 0; i < GlobalVar.samples; i++)
+            {
+                GlobalVar.calcWave[i] = Convert.ToInt32(GlobalVar.runningWave[i]);
+            }
+        }
+
+        static void AlternateScore()
+        {
+            long runningScore = 0;
+            long tempScore = 0;
+
+            long potentialDiff = 0;
+
+
+            for (int i = 1; i < GlobalVar.samples; i++)
+            {
+                tempScore = Math.Abs(GlobalVar.leftmono[i] - GlobalVar.calcWave[i]);
+//                if (GlobalVar.calcWave[i].Equals(0))
+//                    tempScore = 2 * Math.Abs(GlobalVar.leftmono[i]);
+//                if (GlobalVar.leftmono[i].Equals(0))
+//                    tempScore = 2 * Math.Abs(GlobalVar.calcWave[i]);
+         //       potentialDiff = potentialDiff + Math.Abs(GlobalVar.leftmono[i]); // worst is silence
+                potentialDiff = potentialDiff + (2 * Math.Abs(GlobalVar.leftmono[i]));  // worst is mirror
+         //       potentialDiff = potentialDiff + (32 * 1024) + Math.Abs(GlobalVar.leftmono[i]);  // worst is extreme
+
+                runningScore = runningScore + (tempScore);
+            }
+
+            GlobalVar.myScore = Convert.ToInt64((potentialDiff - runningScore)) / 1000;
+
+
+         potentialDiff = potentialDiff / 1000;
+//           Console.WriteLine(" score " + GlobalVar.myScore.ToString() + " of " + potentialDiff.ToString() + 
+//              " " + GlobalVar.samples.ToString());
+//           System.Threading.Thread.Sleep(250000);
+        }
+
+        static void WriteBestFile()
+        {
+            if (GlobalVar.random.Next(0, 1000) < 10000) // dsm
+            {
+                byte[] best = File.ReadAllBytes("target.wav");
+                byte[] diff = File.ReadAllBytes("target.wav");
+                int i = 0;
+                int pos = GlobalVar.soundPos;
+                long smallInt = 0;
+                long medInt = 0;
+                long bigint = 0;
+
+                while (i < (GlobalVar.samples))
+                {
+                    GlobalVar.diffWave[i] = GlobalVar.leftmono[i] - GlobalVar.calcWave[i];
+
+                    if (GlobalVar.calcWave[i] < (0))
+                    {
+                        GlobalVar.calcWave[i] = GlobalVar.calcWave[i] + (16 * 1024 * 1024);
+                    }
+
+                    if (GlobalVar.diffWave[i] < 0)
+                    {
+                        GlobalVar.diffWave[i] = GlobalVar.diffWave[i] + (16 * 1024 * 1024);
+                    }
+
+                    bigint = GlobalVar.calcWave[i] / (256 * 256);
+                    medInt = (GlobalVar.calcWave[i] - (256 * 256 * bigint)) /256;
+                    smallInt = GlobalVar.calcWave[i] - ((256 * 256 * bigint) + (256 * medInt));
+                    best[pos] = Convert.ToByte(smallInt);
+                    best[pos + 1] = Convert.ToByte(medInt);
+                    best[pos + 2] = Convert.ToByte(bigint);
+
+                    diff[pos] = Convert.ToByte(smallInt);
+                    diff[pos + 1] = Convert.ToByte(medInt);
+                    diff[pos + 2] = Convert.ToByte(bigint);
+                    
+                    pos = pos + 3;
+                    i++;
+                }
+
+                string fn = "B" + GlobalVar.bestScore.ToString() + ".wav";
+                
+                if (File.Exists(fn))
+                {
+                    File.Delete(fn);
+                }
+
+                File.WriteAllBytes(fn, best);
+
+
+                fn = "D" + GlobalVar.bestScore.ToString() + ".wav";
+
+                if (File.Exists(fn))
+                {
+                    File.Delete(fn);
+                }
+
+                File.WriteAllBytes(fn, diff);
+
+            }
+
+        }
+
+        static int ExportXMLfile(string XMLfile)
+        {
+            XmlTextWriter xml;
+            string filename = XMLfile;
+
+            if (File.Exists(XMLfile))
+            {
+                try
+                {
+                    File.Delete(XMLfile);
+                }
+                catch
+                {
+                    return (1);
+                }
+            }
+
+           
+             try
+            {
+                xml = new XmlTextWriter(filename, null);
+             }
+            catch
+            {
+                return(1);
+            }
+
+
+             try
+             {
+
+                 if (File.Exists(XMLfile))
+                 {
+                     xml.WriteStartDocument();
+                     xml.WriteStartElement("Features");
+                     xml.WriteWhitespace("\n");
+
+                     xml.WriteElementString("Score", GlobalVar.myScore.ToString());
+                     xml.WriteWhitespace("\n  ");
+
+                     xml.WriteElementString("Best", GlobalVar.bestScore.ToString());
+                     xml.WriteWhitespace("\n  ");
+
+
+                     xml.WriteEndElement();
+                     xml.WriteWhitespace("\n");
+
+                     xml.WriteEndDocument();
+                 }
+
+            }
+            catch
+            {
+                return(1);
+            }
+
+
+             try
+             {
+                 //Write the XML to file and close the writer.
+                 if (File.Exists(XMLfile))
+                 {
+                     xml.Flush();
+                     xml.Close();
+                 }
+             }
+             catch
+             {
+                 return (1);
+             }
+
+            return (0);
+        }
+
+        static void ImportXMLfile(string XMLfile)
+        {
+
+            int frameX = 0;
+            int levelX = 0;
+            int waveX = 0;
+            int actualIndex = 0;
+
+            int lastLevel = framesThisRun;
+
+            int firstOffset = lastLevel;
+            int lastOffset = firstOffset + (framesThisRun * maxLevel);
+
+            int firstAmpActive = lastOffset;
+            int lastAmpActive = firstAmpActive + (framesThisRun * maxLevel);
+
+            int firstFreqActive = lastAmpActive;
+            int lastFreqActive = firstFreqActive + (framesThisRun * maxLevel);
+
+            int firstAmplitude = lastFreqActive;
+            int lastAmplitude = firstAmplitude + (framesThisRun * maxLevel * maxWave);
+
+            int firstFrequency = lastAmplitude;
+            int lastFrequency = firstFrequency + (framesThisRun * maxLevel * maxWave);
+
+            string elementString = "";
+
+            System.Xml.XmlTextReader reader = new System.Xml.XmlTextReader(XMLfile);
+
+            while (reader.Read())
+            {
+                switch (reader.NodeType)
+                {
+                    case XmlNodeType.Element: // The node is an element.
+                        elementString = reader.Name;
+                        break;
+                    case XmlNodeType.Text: //Display the text in each element.
+
+                        if (elementString.Equals("Index"))
+                        {
+                            actualIndex = Convert.ToInt32(reader.Value);
+                        }
+                        if (elementString.Equals("Value"))
+                        {
+                            if (actualIndex < lastLevel)
+                            {
+                                GlobalVar.levelCounter[actualIndex] = Convert.ToInt32(reader.Value); // correct
+                            }
+                            if ((actualIndex >= firstOffset) && (actualIndex < lastOffset))
+                            {
+                                frameX = (actualIndex - firstOffset) / maxLevel;
+                                levelX = (actualIndex - firstOffset) - (maxLevel * frameX);
+                                GlobalVar.levelOffset[frameX,levelX] = Convert.ToInt32(reader.Value);
+                            }
+                            if ((actualIndex >= firstAmpActive) && (actualIndex < lastAmpActive))
+                            {
+                                frameX = (actualIndex - firstAmpActive) / maxLevel;
+                                levelX = (actualIndex - firstAmpActive) - (maxLevel * frameX);
+                                GlobalVar.levelAmpActive[frameX, levelX] = Convert.ToInt32(reader.Value);
+                            }
+                            if ((actualIndex >= firstFreqActive) && (actualIndex < lastFreqActive))
+                            {
+                                frameX = (actualIndex - firstFreqActive) / maxLevel;
+                                levelX = (actualIndex - firstFreqActive) - (maxLevel * frameX);
+                                GlobalVar.levelFreqActive[frameX, levelX] = Convert.ToInt32(reader.Value);
+                            }
+                            if ((actualIndex >= firstAmplitude) && (actualIndex < lastAmplitude))
+                            {
+                                frameX = (actualIndex - firstAmplitude) / (maxLevel * maxWave); // right
+                                levelX = ((actualIndex - firstAmplitude) - (frameX * maxLevel * maxWave)) / maxWave; // right
+                                waveX = (actualIndex - firstAmplitude) - (frameX * maxLevel * maxWave) 
+                                    - (levelX * maxWave); // right
+                                GlobalVar.waveAmplitude[frameX, levelX, waveX] = Convert.ToInt32(reader.Value);
+                            }
+                            if ((actualIndex >= firstFrequency) && (actualIndex < lastFrequency))
+                            {
+                                frameX = (actualIndex - firstFrequency) / (maxLevel * maxWave);
+                                levelX = ((actualIndex - firstFrequency) - (frameX * maxLevel * maxWave)) / maxWave;
+                                waveX = (actualIndex - firstFrequency) - (frameX * maxLevel * maxWave)
+                                    - (levelX * maxWave);
+                                GlobalVar.waveFrequency[frameX, levelX, waveX] = Convert.ToInt32(reader.Value);
+                            }
+
+
+                          //  GlobalVar.features[featureNDX,groupNDX,layerNDX] = Convert.ToInt32(reader.Value);
+                        }
+                        if (elementString.Equals("Generation"))
+                        {
+                            GlobalVar.myGeneration = Convert.ToInt32(reader.Value);
+                        }
+                        if (elementString.Equals("Best"))
+                        {
+                            GlobalVar.bestScore = Convert.ToInt64(reader.Value);
+                        }
+                        break;
+                    case XmlNodeType.EndElement: //Display the end of the element.
+                        break;
+                }
+
+            }
+            reader.Close();
+        }
+
+        static int bytesToInteger(byte firstByte, byte secondByte, byte thirdByte)
+        {
+            // convert two bytes to one short (little endian)
+            int s = (Convert.ToInt16(thirdByte) * (256*256)) + (Convert.ToInt16(secondByte) * 256) + Convert.ToInt16(firstByte);
+            // convert to range from -1 to (just below) 1
+
+            if (s > (8 * 1024 * 1024))
+            {
+                s = s - (16 * 1024 * 1024);
+            }
+
+            return s;
+        }
+
+        // Returns left and right double arrays. 'right' will be null if sound is mono.
+        static void openWav(string filename)
+        {
+            byte[] wav = File.ReadAllBytes(filename);
+
+            // Determine if mono or stereo
+            int channels = wav[22];     // Forget byte 23 as 99.999% of WAVs are 1 or 2 channels
+
+            // Get past all the other sub chunks to get to the data subchunk:
+            int pos = 12;   // First Subchunk ID from 12 to 16
+
+            // Keep iterating until we find the data chunk (i.e. 64 61 74 61 ...... (i.e. 100 97 116 97 in decimal))
+            while (!(wav[pos] == 100 && wav[pos + 1] == 97 && wav[pos + 2] == 116 && wav[pos + 3] == 97))
+            {
+                pos += 4;
+                int chunkSize = wav[pos] + wav[pos + 1] * 256 + wav[pos + 2] * 65536 + wav[pos + 3] * 16777216;
+                pos += 4 + chunkSize;
+            }
+      //      pos += 8;
+
+            pos += 4;
+            int wavSize = wav[pos] + wav[pos + 1] * 256 + wav[pos + 2] * 65536 + wav[pos + 3] * 16777216;
+            pos += 4;
+
+            GlobalVar.soundPos = pos;
+
+            // Pos is now positioned to start of actual sound data.
+//            GlobalVar.samples = (wav.Length - pos) / 3;     // 3 bytes per sample (24 bit sound mono)
+            GlobalVar.samples = (wavSize) / 3;     // more accurate, get actual chunk size
+//
+//            Console.WriteLine(" pos " + pos.ToString() + " wav.Length " + wav.Length.ToString() + 
+//                          " " + GlobalVar.samples.ToString());
+//            System.Threading.Thread.Sleep(2500);
+
+
+            GlobalVar.leftmono = new long[GlobalVar.samples];
+
+            // Write to double array/s:
+            int i = 0;
+
+            while (i < (GlobalVar.samples))
+            {
+                GlobalVar.leftmono[i] = bytesToInteger(wav[pos], wav[pos + 1], wav[pos+2]);
+                //Console.WriteLine(i.ToString() + " " + pos.ToString() + " " +
+                //    wav[pos] + " " + wav[pos + 1] + " " + wav[pos + 2] + " " + GlobalVar.leftmono[i].ToString());
+//                Console.WriteLine(GlobalVar.leftmono[i].ToString());
+                //      System.Threading.Thread.Sleep(20);
+                pos += 3;
+
+                i++;
+            }
+//            System.Threading.Thread.Sleep(250000);
+        }
+
+    }
+}
