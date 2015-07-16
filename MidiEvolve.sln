@@ -21,6 +21,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "as_net", "as_net\as_net.csp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "as_compare", "as_compare\as_compare.csproj", "{510D9745-BBC9-4DAD-BDAF-88F6758FA3E6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "as_midi", "as_midi\as_midi.csproj", "{6DD2F758-6A0B-4226-90F1-61C4FA4673EA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
@@ -67,6 +69,10 @@ Global
 		{510D9745-BBC9-4DAD-BDAF-88F6758FA3E6}.Debug|x86.Build.0 = Debug|x86
 		{510D9745-BBC9-4DAD-BDAF-88F6758FA3E6}.Release|x86.ActiveCfg = Release|x86
 		{510D9745-BBC9-4DAD-BDAF-88F6758FA3E6}.Release|x86.Build.0 = Release|x86
+		{6DD2F758-6A0B-4226-90F1-61C4FA4673EA}.Debug|x86.ActiveCfg = Debug|x86
+		{6DD2F758-6A0B-4226-90F1-61C4FA4673EA}.Debug|x86.Build.0 = Debug|x86
+		{6DD2F758-6A0B-4226-90F1-61C4FA4673EA}.Release|x86.ActiveCfg = Release|x86
+		{6DD2F758-6A0B-4226-90F1-61C4FA4673EA}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
