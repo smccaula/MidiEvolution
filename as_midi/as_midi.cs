@@ -77,7 +77,7 @@ namespace as_midi
         {
 
             string XMLfile = "test0995.xml";
-            openWav("target.wav");
+            openWav("target.wav"); 
             int nextApply = -1;
             bool someLeft = true;
             Random random = new Random();
@@ -118,7 +118,7 @@ namespace as_midi
             }
 
 
-            if (!GetExistingCharacteristics(GlobalVar.popMember))
+            if (!GetExistingCharacteristics(GlobalVar.popMember)) 
             {
                 //    Console.WriteLine("input error");
                 ExportXMLfile(XMLfile);
@@ -130,16 +130,22 @@ namespace as_midi
                 GlobalVar.frameActive[frameX] = false;
             }
 
-            for (int i = 0; i < GlobalVar.samples; i++)
-            {
-                GlobalVar.calcWave[i] = 0;
-            }
 
             for (int i = 0; i < GlobalVar.samples; i++)
             {
                 GlobalVar.sampleDiff[i] = (2 * Math.Abs(GlobalVar.leftmono[i]));
                 GlobalVar.potentialDiff = GlobalVar.potentialDiff + GlobalVar.sampleDiff[i];  // worst is mirror
             }
+
+
+            //at this point we have the target wav file, and the XML of our MIDI file
+
+            BuildMIDIFile();
+
+            RenderMIDIToWav();
+
+            // at this point I have both wav files, and the rest of the process should be identical
+
 
             someLeft = true;
             int loopCTR = 0;
@@ -230,7 +236,21 @@ namespace as_midi
         }
 
 
+        static void BuildMIDIFile()
+        {
+            // GetExistingCharacteristics should already have turned XML into MIDI events
+            // need to sort all events based on time (any event can have any time)
+            // New routine to write header and all events into tracks
+            // Have a valid MIDI file by the end of this
+        }
 
+        static void RenderMIDIToWav()
+        {
+            // call Fluidity passing new MIDI file
+            // import new WAV file into
+            // can rewrite openWav() to read either target or new 
+            // can write this part first and used a pre-created MIDI file
+        }
 
         static int GetWeights()
         {
@@ -767,11 +787,6 @@ namespace as_midi
 
             GlobalVar.framesThisRun = Convert.ToInt16(GlobalVar.samples / sineInterval) + 1;
             GlobalVar.featureCount = (4 * GlobalVar.framesThisRun);
-            //    GlobalVar.extraBits = Convert.ToInt16(GlobalVar.samples - (sineInterval * GlobalVar.framesThisRun));
-            //           Console.WriteLine("samples - " + GlobalVar.samples.ToString() + " frames - " + GlobalVar.framesThisRun.ToString() 
-            //               + " features - " + GlobalVar.featureCount.ToString() 
-            //              + " interval - " + sineInterval.ToString());
-            //            System.Threading.Thread.Sleep(25000);
 
             GlobalVar.leftmono = new long[GlobalVar.samples];
 
