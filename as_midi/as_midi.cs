@@ -29,6 +29,12 @@ namespace as_midi
             public static long[] calcWave = new long[maxSamples];
             public static long[] diffWave = new long[maxSamples];
 
+            public static int[] MIDIdelta = new int[framesThisRun];
+            public static int[] MIDItype = new int[framesThisRun];
+            public static int[] MIDIchannel = new int[framesThisRun];
+            public static int[] MIDIdata1 = new int[framesThisRun];
+            public static int[] MIDIdata2 = new int[framesThisRun];
+
             public static int[] levelOffset = new int[framesThisRun];
             public static int[] levelFrequency = new int[framesThisRun];
             public static double[] levelFD = new double[framesThisRun];
@@ -687,10 +693,22 @@ namespace as_midi
 
         static void AssignToParamaters()
         {
-            int waveSize = 4;
+            int MIDISize = 5;
 
             for (int i = 0; i < GlobalVar.framesThisRun; i++)
             {
+
+                GlobalVar.MIDIdelta[i] = GlobalVar.features[(i * MIDISize)];
+                GlobalVar.MIDItype[i] = GlobalVar.features[1 + (i * MIDISize)];
+                if (GlobalVar.MIDItype[i] >= (256 * 128))
+                {
+                    GlobalVar.levelOffset[i] = GlobalVar.levelOffset[i] + 1;
+                    GlobalVar.levelFrequency[i] = GlobalVar.levelFrequency[i] - (256 * 128);
+                }
+
+    //        public static int[] MIDItype = new int[framesThisRun];
+    //        public static int[] MIDIdata1 = new int[framesThisRun];
+    //        public static int[] MIDIdata2 = new int[framesThisRun];
 
                 GlobalVar.levelOffset[i] = 0;
 
