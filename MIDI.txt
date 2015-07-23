@@ -1,0 +1,2722 @@
+unit MainUnit;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, Menus, ComCtrls, ExtCtrls, MidiOut, MidiType, monprocs,
+  WinTypes, WinProcs, MMSystem, StdCtrls, MIDIIn, Midicons, Buttons, Grids,
+  Spin,DateUtils, MidiFile;
+
+resourcestring
+  sSaveChanges = 'Save changes to %s?';
+  sOverWrite = 'OK to overwrite %s';
+  sUntitled = 'Untitled';
+  sModified = 'Modified';
+  sColRowInfo = 'Line: %3d   Col: %3d';
+
+
+type
+  TForm1 = class(TForm)
+    Panel1: TPanel;
+    StatusBar1: TStatusBar;
+    MainMenu1: TMainMenu;
+    File1: TMenuItem;
+    Exit1: TMenuItem;
+    Help1: TMenuItem;
+    Panel2: TPanel;
+    MidiOutput1: TMidiOutput;
+    Open1: TMenuItem;
+    Save1: TMenuItem;
+    Image1: TImage;
+    OpenDialog1: TOpenDialog;
+    SaveDialog1: TSaveDialog;
+    StaticText11: TStaticText;
+    cmbOutput: TComboBox;
+    Panel3: TPanel;
+    Panel4: TPanel;
+    ComboBox1: TComboBox;
+    Shape1: TShape;
+    Shape2: TShape;
+    Shape3: TShape;
+    Shape4: TShape;
+    Shape5: TShape;
+    Shape6: TShape;
+    Shape7: TShape;
+    Shape8: TShape;
+    Shape9: TShape;
+    Shape10: TShape;
+    Shape11: TShape;
+    Shape12: TShape;
+    Shape13: TShape;
+    Shape14: TShape;
+    Shape15: TShape;
+    Shape16: TShape;
+    Label1: TLabel;
+    Label2: TLabel;
+    Label3: TLabel;
+    Label4: TLabel;
+    Label5: TLabel;
+    Label6: TLabel;
+    Label7: TLabel;
+    Label8: TLabel;
+    Label9: TLabel;
+    Label10: TLabel;
+    Label11: TLabel;
+    Label12: TLabel;
+    Label13: TLabel;
+    Label14: TLabel;
+    Label15: TLabel;
+    Label16: TLabel;
+    Label17: TLabel;
+    StaticText1: TStaticText;
+    TempoSpin: TSpinEdit;
+    Timer2: TTimer;
+    StaticText2: TStaticText;
+    ProgramSpin: TSpinEdit;
+    ComboBox2: TComboBox;
+    Shape17: TShape;
+    Shape18: TShape;
+    Shape19: TShape;
+    Shape20: TShape;
+    Shape21: TShape;
+    Shape22: TShape;
+    Shape23: TShape;
+    Shape24: TShape;
+    Shape25: TShape;
+    Shape26: TShape;
+    Shape27: TShape;
+    Shape28: TShape;
+    Shape29: TShape;
+    Shape30: TShape;
+    Shape31: TShape;
+    Shape32: TShape;
+    ComboBox3: TComboBox;
+    Shape33: TShape;
+    Shape34: TShape;
+    Shape35: TShape;
+    Shape36: TShape;
+    Shape37: TShape;
+    Shape38: TShape;
+    Shape39: TShape;
+    Shape40: TShape;
+    Shape41: TShape;
+    Shape42: TShape;
+    Shape43: TShape;
+    Shape44: TShape;
+    Shape45: TShape;
+    Shape46: TShape;
+    Shape47: TShape;
+    Shape48: TShape;
+    StaticText3: TStaticText;
+    ChannelSpin: TSpinEdit;
+    StaticText4: TStaticText;
+    VeloSpin: TSpinEdit;
+    CheckBox1: TCheckBox;
+    CheckBox2: TCheckBox;
+    CheckBox3: TCheckBox;
+    ComboBox4: TComboBox;
+    Shape49: TShape;
+    Shape50: TShape;
+    Shape51: TShape;
+    Shape52: TShape;
+    Shape53: TShape;
+    Shape54: TShape;
+    Shape55: TShape;
+    Shape56: TShape;
+    Shape57: TShape;
+    Shape58: TShape;
+    Shape59: TShape;
+    Shape60: TShape;
+    Shape61: TShape;
+    Shape62: TShape;
+    Shape63: TShape;
+    Shape64: TShape;
+    CheckBox4: TCheckBox;
+    ComboBox5: TComboBox;
+    Shape65: TShape;
+    Shape66: TShape;
+    Shape67: TShape;
+    Shape68: TShape;
+    Shape69: TShape;
+    Shape70: TShape;
+    Shape71: TShape;
+    Shape72: TShape;
+    Shape73: TShape;
+    Shape74: TShape;
+    Shape75: TShape;
+    Shape76: TShape;
+    Shape77: TShape;
+    Shape78: TShape;
+    Shape79: TShape;
+    Shape80: TShape;
+    CheckBox5: TCheckBox;
+    ComboBox6: TComboBox;
+    Shape81: TShape;
+    Shape82: TShape;
+    Shape83: TShape;
+    Shape84: TShape;
+    Shape85: TShape;
+    Shape86: TShape;
+    Shape87: TShape;
+    Shape88: TShape;
+    Shape89: TShape;
+    Shape90: TShape;
+    Shape91: TShape;
+    Shape92: TShape;
+    Shape93: TShape;
+    Shape94: TShape;
+    Shape95: TShape;
+    Shape96: TShape;
+    CheckBox6: TCheckBox;
+    ComboBox7: TComboBox;
+    Shape97: TShape;
+    Shape98: TShape;
+    Shape99: TShape;
+    Shape100: TShape;
+    Shape101: TShape;
+    Shape102: TShape;
+    Shape103: TShape;
+    Shape104: TShape;
+    Shape105: TShape;
+    Shape106: TShape;
+    Shape107: TShape;
+    Shape108: TShape;
+    Shape109: TShape;
+    Shape110: TShape;
+    Shape111: TShape;
+    Shape112: TShape;
+    CheckBox7: TCheckBox;
+    ComboBox8: TComboBox;
+    Shape113: TShape;
+    Shape114: TShape;
+    Shape115: TShape;
+    Shape116: TShape;
+    Shape117: TShape;
+    Shape118: TShape;
+    Shape119: TShape;
+    Shape120: TShape;
+    Shape121: TShape;
+    Shape122: TShape;
+    Shape123: TShape;
+    Shape124: TShape;
+    Shape125: TShape;
+    Shape126: TShape;
+    Shape127: TShape;
+    Shape128: TShape;
+    CheckBox8: TCheckBox;
+    StaticText5: TStaticText;
+    SpinEdit5: TSpinEdit;
+    BitBtn8: TBitBtn;
+    BitBtn9: TBitBtn;
+    DrumLines: TMemo;
+    NoteLines: TMemo;
+    CheckBox9: TCheckBox;
+    CheckBox10: TCheckBox;
+    CheckBox11: TCheckBox;
+    CheckBox12: TCheckBox;
+    CheckBox13: TCheckBox;
+    CheckBox14: TCheckBox;
+    CheckBox15: TCheckBox;
+    CheckBox16: TCheckBox;
+    GroupBox1: TGroupBox;
+    BitBtn11: TBitBtn;
+    BitBtn10: TBitBtn;
+    RNoteBox: TCheckBox;
+    MutateButton: TBitBtn;
+    MNoteBox: TCheckBox;
+    MinEdit: TSpinEdit;
+    StaticText6: TStaticText;
+    StaticText7: TStaticText;
+    MaxEdit: TSpinEdit;
+    BitBtn12: TBitBtn;
+    BitBtn13: TBitBtn;
+    BitBtn5: TBitBtn;
+    BitBtn3: TBitBtn;
+    GroupBox2: TGroupBox;
+    BitBtn1: TBitBtn;
+    BitBtn2: TBitBtn;
+    BitBtn4: TBitBtn;
+    BitBtn6: TBitBtn;
+    BitBtn7: TBitBtn;
+    RandomBox: TCheckBox;
+    MutateBox: TCheckBox;
+    TrackBar1: TTrackBar;
+    StaticText8: TStaticText;
+    SBTimer: TTimer;
+    StaticText9: TStaticText;
+    StaticText10: TStaticText;
+    StaticText12: TStaticText;
+    SpinEdit1: TSpinEdit;
+    BitBtn14: TBitBtn;
+    CopySpinEdit: TSpinEdit;
+    VeloTrack: TTrackBar;
+    PageGroup: TRadioGroup;
+    TempoButton: TSpeedButton;
+    StaticText13: TStaticText;
+    procedure Open1Click(Sender: TObject);
+    procedure SetFileName(const FileName: String);
+    procedure Image1MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Image1MouseUp(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure cmbOutputChange(Sender: TObject);
+    procedure OpenDevs();
+    procedure CloseDevs();
+    procedure FormCreate(Sender: TObject);
+    procedure Shape1MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure UpdateThisShape(ThisShape:TShape);
+    procedure Shape2MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape3MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape4MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape5MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape6MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure BitBtn1Click(Sender: TObject);
+    procedure BitBtn2Click(Sender: TObject);
+    procedure Shape7MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape8MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape9MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape10MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape11MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape12MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape13MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape14MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape15MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape16MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure PlayaNote(NoteVal:Integer);
+    procedure TempoSpinChange(Sender: TObject);
+    procedure BitBtn3Click(Sender: TObject);
+    procedure ProgramSpinChange(Sender: TObject);
+    procedure BitBtn5Click(Sender: TObject);
+    procedure Shape17MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape18MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape19MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape20MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape21MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape22MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape23MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape24MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape25MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape26MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape27MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape28MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape29MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape30MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape31MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape32MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape33MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape34MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape35MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape36MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape37MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape38MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape39MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape40MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape41MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape42MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape43MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape44MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape45MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape46MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape47MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape48MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure BitBtn4Click(Sender: TObject);
+    procedure BitBtn6Click(Sender: TObject);
+    procedure Save1Click(Sender: TObject);
+    procedure Shape49MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape50MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape51MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape52MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape53ContextPopup(Sender: TObject; MousePos: TPoint;
+      var Handled: Boolean);
+    procedure Shape54MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape55MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape56MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape57MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape58MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape59MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape60MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape61MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape62MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape63MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape64MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape53MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape65MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape66MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape67MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape68MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape69MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape70MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape71MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape72MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape73MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape74MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape75MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape76MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape77MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape78MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape79MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape80MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape81MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape82MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape83MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape84MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape85MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape86MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape87MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape88MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape89MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape90MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape91MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape92MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape93MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape94MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape95MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape96MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape97MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape98MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape99MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape100MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape101MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape102MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape103MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape104MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape105MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape106MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape107MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape108MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape109MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape110MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape111MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape112MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape113MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape114MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape115MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape116MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape117MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape118MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape119MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape120MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape121MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape122MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape123MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape124MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape125MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape126MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape127MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Shape128MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure SetTimes;
+    procedure AssignShapes(PageX:Integer);
+    procedure ReAssignShapes(PageX:Integer);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure BitBtn8Click(Sender: TObject);
+    procedure BitBtn9Click(Sender: TObject);
+    procedure BitBtn10Click(Sender: TObject);
+    procedure BitBtn11Click(Sender: TObject);
+    procedure BitBtn7Click(Sender: TObject);
+    procedure KeyComboChange(Sender: TObject);
+    procedure Label5DblClick(Sender: TObject);
+    procedure MutateButtonClick(Sender: TObject);
+    procedure Exit1Click(Sender: TObject);
+    procedure SBTimerTimer(Sender: TObject);
+    procedure BitBtn12Click(Sender: TObject);
+    procedure SpinEdit1Change(Sender: TObject);
+    procedure BitBtn14Click(Sender: TObject);
+    procedure Label2Click(Sender: TObject);
+    procedure Label3Click(Sender: TObject);
+    procedure Label4Click(Sender: TObject);
+    procedure Label5Click(Sender: TObject);
+    procedure Label6Click(Sender: TObject);
+    procedure Label7Click(Sender: TObject);
+    procedure Label8Click(Sender: TObject);
+    procedure Label9Click(Sender: TObject);
+    procedure TempoButtonClick(Sender: TObject);
+    procedure Label10Click(Sender: TObject);
+    procedure Label11Click(Sender: TObject);
+    procedure Label12Click(Sender: TObject);
+    procedure Label13Click(Sender: TObject);
+    procedure Label14Click(Sender: TObject);
+    procedure Label15Click(Sender: TObject);
+    procedure Label16Click(Sender: TObject);
+    procedure Label17Click(Sender: TObject);
+    procedure SpinEdit5Change(Sender: TObject);
+  private
+    NewEvent : TMyMidiEvent;
+  public
+    { Public declarations }
+  end;
+
+var
+  Form1: TForm1;
+  MidiFile1: TMidiFile;
+  TXNow,TXThen:TDateTime;
+  Interval1, IntervalCtr, BigCtr:Integer;
+  RealInterval:Real;
+  TimeArray : array [0..17] of Integer;
+  NoteOnCtr:Integer;
+  ShapeArray : array [1..128,1..64] of Integer;
+  ComboArray : array [1..8] of TComboBox;
+  LabelArray : array [1..16] of TLabel;
+  CheckBoxArray : array [1..8] of TCheckBox;
+  TimeCaps1:TTimeCaps;
+  TimerID1:Cardinal;
+  Interval,Accur:Word;
+  TimerTag:Integer;
+
+implementation
+
+{$R *.dfm}
+
+procedure MMTimerProc(uTimerID, uMessage:Cardinal; dwUser, dw1, dw2:Integer); stdcall;
+var
+  TX,TY,TF:Integer;
+  NewEvent : TMyMidiEvent;
+  Sender:TObject;
+  PageX:Integer;
+  ExtraVelo:Integer;
+begin
+  PageX := Form1.SpinEdit1.Value;
+  if TimerTag = 99 then
+    begin
+      TimerTag := 0;
+      Form1.AssignShapes(PageX);
+      LabelArray[16].Font.Color := clBlack;
+      if Form1.RandomBox.Checked then
+        Form1.BitBtn6Click(Sender)
+      else
+      if Form1.MutateBox.Checked then
+        Form1.BitBtn7Click(Sender);
+      if Form1.RNoteBox.Checked then
+        Form1.BitBtn10Click(Sender);
+      if Form1.MNoteBox.Checked then
+        Form1.MutateButtonClick(Sender);
+    end
+  else
+  if TimerTag = 0 then
+    begin
+      if Form1.SpinEdit1.Value = Form1.SpinEdit5.Value then
+        Form1.SpinEdit1.Value := 1
+      else
+        Form1.SpinEdit1.Value := Form1.SpinEdit1.Value + 1;
+      PageX := Form1.SpinEdit1.Value;
+      Form1.AssignShapes(PageX);
+      LabelArray[16].Font.Color := clBlack;
+      if Form1.RandomBox.Checked then
+        Form1.BitBtn6Click(Sender)
+      else
+      if Form1.MutateBox.Checked then
+        Form1.BitBtn7Click(Sender);
+      if Form1.RNoteBox.Checked then
+        Form1.BitBtn10Click(Sender);
+      if Form1.MNoteBox.Checked then
+        Form1.MutateButtonClick(Sender);
+    end
+  else
+    LabelArray[TimerTag].Font.Color := clBlack;
+  Inc(TimerTag);
+  LabelArray[TimerTag].Font.Color := clRed;
+  TX := TimerTag;
+  for TY := 0 to 7 do
+    begin
+      TF := 0;
+      if ShapeArray[(TX) + (16*TY),PageX] = clRed then
+        begin
+          TF := StrToInt(Copy(ComboArray[TY + 1].Text,1,2));
+          if TF <> 0 then
+            begin
+              if LabelArray[TimerTag].Color = clWhite then
+                ExtraVelo := Random(10) + 10
+              else
+                ExtraVelo := 0;
+              ExtraVelo := ExtraVelo + Random(Form1.VeloTrack.Position)
+                - Random(Form1.VeloTrack.Position);
+              NewEvent := TMyMidiEvent.Create;
+              NewEvent.Time := 0;
+              NewEvent.MidiMessage := MIDI_NOTEON + Form1.ChannelSpin.Value - 1;
+              NewEvent.Data1 := TF;
+              NewEvent.Data2 := Form1.VeloSpin.Value + ExtraVelo;
+              NewEvent.Sysex := nil;
+              NewEvent.SysexLength := 0;
+              Form1.MidiOutput1.PutMidiEvent(NewEvent);
+            end;
+        end;
+    end;
+  if TimerTag > 15 then
+    begin
+      TimerTag := 0;
+    end;
+end;
+
+procedure TForm1.SetFileName(const FileName: String);
+begin
+ // FFileName := FileName;
+  Caption := Format('%s - %s', [ExtractFileName(FileName), Application.Title]);
+end;
+
+procedure TForm1.Open1Click(Sender: TObject);
+var
+  i,j: integer;
+  track : TMidiTrack;
+  event : PMidiEvent;
+begin
+  if opendialog1.execute then
+  begin
+    midifile1.filename := opendialog1.filename;
+    midifile1.readfile;
+//    label1.caption := IntToStr(midifile1.NumberOfTracks);
+    TempoSpin.Value := midifile1.Bpm;
+//    TracksGrid.cells.clear;
+    for i := 0 to midifile1.NumberOfTracks-1 do
+    begin
+      track := midifile1.getTrack(i);
+//      TracksGrid.cells[0,i] := 'Tr: '+ track.getName + ' '+ track.getInstrument ;
+    end;
+  end;
+end;
+
+procedure TForm1.AssignShapes(PageX:Integer);
+begin
+  CheckBoxArray[1] := CheckBox1;
+  CheckBoxArray[2] := CheckBox2;
+  CheckBoxArray[3] := CheckBox3;
+  CheckBoxArray[4] := CheckBox4;
+  CheckBoxArray[5] := CheckBox5;
+  CheckBoxArray[6] := CheckBox6;
+  CheckBoxArray[7] := CheckBox7;
+  CheckBoxArray[8] := CheckBox8;
+  LabelArray[1] := Label2;
+  LabelArray[2] := Label3;
+  LabelArray[3] := Label4;
+  LabelArray[4] := Label5;
+  LabelArray[5] := Label6;
+  LabelArray[6] := Label7;
+  LabelArray[7] := Label8;
+  LabelArray[8] := Label9;
+  LabelArray[9] := Label10;
+  LabelArray[10] := Label11;
+  LabelArray[11] := Label12;
+  LabelArray[12] := Label13;
+  LabelArray[13] := Label14;
+  LabelArray[14] := Label15;
+  LabelArray[15] := Label16;
+  LabelArray[16] := Label17;
+  ComboArray[1] := ComboBox1;
+  ComboArray[2] := ComboBox2;
+  ComboArray[3] := ComboBox3;
+  ComboArray[4] := ComboBox4;
+  ComboArray[5] := ComboBox5;
+  ComboArray[6] := ComboBox6;
+  ComboArray[7] := ComboBox7;
+  ComboArray[8] := ComboBox8;
+  ShapeArray[1,PageX] := Shape1.Brush.Color;
+  ShapeArray[2,PageX] := Shape2.Brush.Color;
+  ShapeArray[3,PageX] := Shape3.Brush.Color;
+  ShapeArray[4,PageX] := Shape4.Brush.Color;
+  ShapeArray[5,PageX] := Shape5.Brush.Color;
+  ShapeArray[6,PageX] := Shape6.Brush.Color;
+  ShapeArray[7,PageX] := Shape7.Brush.Color;
+  ShapeArray[8,PageX] := Shape8.Brush.Color;
+  ShapeArray[9,PageX] := Shape9.Brush.Color;
+  ShapeArray[10,PageX] := Shape10.Brush.Color;
+  ShapeArray[11,PageX] := Shape11.Brush.Color;
+  ShapeArray[12,PageX] := Shape12.Brush.Color;
+  ShapeArray[13,PageX] := Shape13.Brush.Color;
+  ShapeArray[14,PageX] := Shape14.Brush.Color;
+  ShapeArray[15,PageX] := Shape15.Brush.Color;
+  ShapeArray[16,PageX] := Shape16.Brush.Color;
+  ShapeArray[17,PageX] := Shape17.Brush.Color;
+  ShapeArray[18,PageX] := Shape18.Brush.Color;
+  ShapeArray[19,PageX] := Shape19.Brush.Color;
+  ShapeArray[20,PageX] := Shape20.Brush.Color;
+  ShapeArray[21,PageX] := Shape21.Brush.Color;
+  ShapeArray[22,PageX] := Shape22.Brush.Color;
+  ShapeArray[23,PageX] := Shape23.Brush.Color;
+  ShapeArray[24,PageX] := Shape24.Brush.Color;
+  ShapeArray[25,PageX] := Shape25.Brush.Color;
+  ShapeArray[26,PageX] := Shape26.Brush.Color;
+  ShapeArray[27,PageX] := Shape27.Brush.Color;
+  ShapeArray[28,PageX] := Shape28.Brush.Color;
+  ShapeArray[29,PageX] := Shape29.Brush.Color;
+  ShapeArray[30,PageX] := Shape30.Brush.Color;
+  ShapeArray[31,PageX] := Shape31.Brush.Color;
+  ShapeArray[32,PageX] := Shape32.Brush.Color;
+  ShapeArray[33,PageX] := Shape33.Brush.Color;
+  ShapeArray[34,PageX] := Shape34.Brush.Color;
+  ShapeArray[35,PageX] := Shape35.Brush.Color;
+  ShapeArray[36,PageX] := Shape36.Brush.Color;
+  ShapeArray[37,PageX] := Shape37.Brush.Color;
+  ShapeArray[38,PageX] := Shape38.Brush.Color;
+  ShapeArray[39,PageX] := Shape39.Brush.Color;
+  ShapeArray[40,PageX] := Shape40.Brush.Color;
+  ShapeArray[41,PageX] := Shape41.Brush.Color;
+  ShapeArray[42,PageX] := Shape42.Brush.Color;
+  ShapeArray[43,PageX] := Shape43.Brush.Color;
+  ShapeArray[44,PageX] := Shape44.Brush.Color;
+  ShapeArray[45,PageX] := Shape45.Brush.Color;
+  ShapeArray[46,PageX] := Shape46.Brush.Color;
+  ShapeArray[47,PageX] := Shape47.Brush.Color;
+  ShapeArray[48,PageX] := Shape48.Brush.Color;
+  ShapeArray[49,PageX] := Shape49.Brush.Color;
+  ShapeArray[50,PageX] := Shape50.Brush.Color;
+  ShapeArray[51,PageX] := Shape51.Brush.Color;
+  ShapeArray[52,PageX] := Shape52.Brush.Color;
+  ShapeArray[53,PageX] := Shape53.Brush.Color;
+  ShapeArray[54,PageX] := Shape54.Brush.Color;
+  ShapeArray[55,PageX] := Shape55.Brush.Color;
+  ShapeArray[56,PageX] := Shape56.Brush.Color;
+  ShapeArray[57,PageX] := Shape57.Brush.Color;
+  ShapeArray[58,PageX] := Shape58.Brush.Color;
+  ShapeArray[59,PageX] := Shape59.Brush.Color;
+  ShapeArray[60,PageX] := Shape60.Brush.Color;
+  ShapeArray[61,PageX] := Shape61.Brush.Color;
+  ShapeArray[62,PageX] := Shape62.Brush.Color;
+  ShapeArray[63,PageX] := Shape63.Brush.Color;
+  ShapeArray[64,PageX] := Shape64.Brush.Color;
+  ShapeArray[65,PageX] := Shape65.Brush.Color;
+  ShapeArray[66,PageX] := Shape66.Brush.Color;
+  ShapeArray[67,PageX] := Shape67.Brush.Color;
+  ShapeArray[68,PageX] := Shape68.Brush.Color;
+  ShapeArray[69,PageX] := Shape69.Brush.Color;
+  ShapeArray[70,PageX] := Shape70.Brush.Color;
+  ShapeArray[71,PageX] := Shape71.Brush.Color;
+  ShapeArray[72,PageX] := Shape72.Brush.Color;
+  ShapeArray[73,PageX] := Shape73.Brush.Color;
+  ShapeArray[74,PageX] := Shape74.Brush.Color;
+  ShapeArray[75,PageX] := Shape75.Brush.Color;
+  ShapeArray[76,PageX] := Shape76.Brush.Color;
+  ShapeArray[77,PageX] := Shape77.Brush.Color;
+  ShapeArray[78,PageX] := Shape78.Brush.Color;
+  ShapeArray[79,PageX] := Shape79.Brush.Color;
+  ShapeArray[80,PageX] := Shape80.Brush.Color;
+  ShapeArray[81,PageX] := Shape81.Brush.Color;
+  ShapeArray[82,PageX] := Shape82.Brush.Color;
+  ShapeArray[83,PageX] := Shape83.Brush.Color;
+  ShapeArray[84,PageX] := Shape84.Brush.Color;
+  ShapeArray[85,PageX] := Shape85.Brush.Color;
+  ShapeArray[86,PageX] := Shape86.Brush.Color;
+  ShapeArray[87,PageX] := Shape87.Brush.Color;
+  ShapeArray[88,PageX] := Shape88.Brush.Color;
+  ShapeArray[89,PageX] := Shape89.Brush.Color;
+  ShapeArray[90,PageX] := Shape90.Brush.Color;
+  ShapeArray[91,PageX] := Shape91.Brush.Color;
+  ShapeArray[92,PageX] := Shape92.Brush.Color;
+  ShapeArray[93,PageX] := Shape93.Brush.Color;
+  ShapeArray[94,PageX] := Shape94.Brush.Color;
+  ShapeArray[95,PageX] := Shape95.Brush.Color;
+  ShapeArray[96,PageX] := Shape96.Brush.Color;
+  ShapeArray[97,PageX] := Shape97.Brush.Color;
+  ShapeArray[98,PageX] := Shape98.Brush.Color;
+  ShapeArray[99,PageX] := Shape99.Brush.Color;
+  ShapeArray[100,PageX] := Shape100.Brush.Color;
+  ShapeArray[101,PageX] := Shape101.Brush.Color;
+  ShapeArray[102,PageX] := Shape102.Brush.Color;
+  ShapeArray[103,PageX] := Shape103.Brush.Color;
+  ShapeArray[104,PageX] := Shape104.Brush.Color;
+  ShapeArray[105,PageX] := Shape105.Brush.Color;
+  ShapeArray[106,PageX] := Shape106.Brush.Color;
+  ShapeArray[107,PageX] := Shape107.Brush.Color;
+  ShapeArray[108,PageX] := Shape108.Brush.Color;
+  ShapeArray[109,PageX] := Shape109.Brush.Color;
+  ShapeArray[110,PageX] := Shape110.Brush.Color;
+  ShapeArray[111,PageX] := Shape111.Brush.Color;
+  ShapeArray[112,PageX] := Shape112.Brush.Color;
+  ShapeArray[113,PageX] := Shape113.Brush.Color;
+  ShapeArray[114,PageX] := Shape114.Brush.Color;
+  ShapeArray[115,PageX] := Shape115.Brush.Color;
+  ShapeArray[116,PageX] := Shape116.Brush.Color;
+  ShapeArray[117,PageX] := Shape117.Brush.Color;
+  ShapeArray[118,PageX] := Shape118.Brush.Color;
+  ShapeArray[119,PageX] := Shape119.Brush.Color;
+  ShapeArray[120,PageX] := Shape120.Brush.Color;
+  ShapeArray[121,PageX] := Shape121.Brush.Color;
+  ShapeArray[122,PageX] := Shape122.Brush.Color;
+  ShapeArray[123,PageX] := Shape123.Brush.Color;
+  ShapeArray[124,PageX] := Shape124.Brush.Color;
+  ShapeArray[125,PageX] := Shape125.Brush.Color;
+  ShapeArray[126,PageX] := Shape126.Brush.Color;
+  ShapeArray[127,PageX] := Shape127.Brush.Color;
+  ShapeArray[128,PageX] := Shape128.Brush.Color;
+  StatusBar1.Panels[0].Text := 'assigned '
+        + IntToStr(PageX);
+  SBTimer.Enabled := True;
+end;
+
+procedure TForm1.ReAssignShapes(PageX:Integer);
+begin
+  Shape1.Brush.Color := ShapeArray[1,PageX];
+  Shape2.Brush.Color := ShapeArray[2,PageX];
+  Shape3.Brush.Color := ShapeArray[3,PageX];
+  Shape4.Brush.Color := ShapeArray[4,PageX];
+  Shape5.Brush.Color := ShapeArray[5,PageX];
+  Shape6.Brush.Color := ShapeArray[6,PageX];
+  Shape7.Brush.Color := ShapeArray[7,PageX];
+  Shape8.Brush.Color := ShapeArray[8,PageX];
+  Shape9.Brush.Color := ShapeArray[9,PageX];
+  Shape10.Brush.Color := ShapeArray[10,PageX];
+  Shape11.Brush.Color := ShapeArray[11,PageX];
+  Shape12.Brush.Color := ShapeArray[12,PageX];
+  Shape13.Brush.Color := ShapeArray[13,PageX];
+  Shape14.Brush.Color := ShapeArray[14,PageX];
+  Shape15.Brush.Color := ShapeArray[15,PageX];
+  Shape16.Brush.Color := ShapeArray[16,PageX];
+  Shape17.Brush.Color := ShapeArray[17,PageX];
+  Shape18.Brush.Color := ShapeArray[18,PageX];
+  Shape19.Brush.Color := ShapeArray[19,PageX];
+  Shape20.Brush.Color := ShapeArray[20,PageX];
+  Shape21.Brush.Color := ShapeArray[21,PageX];
+  Shape22.Brush.Color := ShapeArray[22,PageX];
+  Shape23.Brush.Color := ShapeArray[23,PageX];
+  Shape24.Brush.Color := ShapeArray[24,PageX];
+  Shape25.Brush.Color := ShapeArray[25,PageX];
+  Shape26.Brush.Color := ShapeArray[26,PageX];
+  Shape27.Brush.Color := ShapeArray[27,PageX];
+  Shape28.Brush.Color := ShapeArray[28,PageX];
+  Shape29.Brush.Color := ShapeArray[29,PageX];
+  Shape30.Brush.Color := ShapeArray[30,PageX];
+  Shape31.Brush.Color := ShapeArray[31,PageX];
+  Shape32.Brush.Color := ShapeArray[32,PageX];
+  Shape33.Brush.Color := ShapeArray[33,PageX];
+  Shape34.Brush.Color := ShapeArray[34,PageX];
+  Shape35.Brush.Color := ShapeArray[35,PageX];
+  Shape36.Brush.Color := ShapeArray[36,PageX];
+  Shape37.Brush.Color := ShapeArray[37,PageX];
+  Shape38.Brush.Color := ShapeArray[38,PageX];
+  Shape39.Brush.Color := ShapeArray[39,PageX];
+  Shape40.Brush.Color := ShapeArray[40,PageX];
+  Shape41.Brush.Color := ShapeArray[41,PageX];
+  Shape42.Brush.Color := ShapeArray[42,PageX];
+  Shape43.Brush.Color := ShapeArray[43,PageX];
+  Shape44.Brush.Color := ShapeArray[44,PageX];
+  Shape45.Brush.Color := ShapeArray[45,PageX];
+  Shape46.Brush.Color := ShapeArray[46,PageX];
+  Shape47.Brush.Color := ShapeArray[47,PageX];
+  Shape48.Brush.Color := ShapeArray[48,PageX];
+  Shape49.Brush.Color := ShapeArray[49,PageX];
+  Shape50.Brush.Color := ShapeArray[50,PageX];
+  Shape51.Brush.Color := ShapeArray[51,PageX];
+  Shape52.Brush.Color := ShapeArray[52,PageX];
+  Shape53.Brush.Color := ShapeArray[53,PageX];
+  Shape54.Brush.Color := ShapeArray[54,PageX];
+  Shape55.Brush.Color := ShapeArray[55,PageX];
+  Shape56.Brush.Color := ShapeArray[56,PageX];
+  Shape57.Brush.Color := ShapeArray[57,PageX];
+  Shape58.Brush.Color := ShapeArray[58,PageX];
+  Shape59.Brush.Color := ShapeArray[59,PageX];
+  Shape60.Brush.Color := ShapeArray[60,PageX];
+  Shape61.Brush.Color := ShapeArray[61,PageX];
+  Shape62.Brush.Color := ShapeArray[62,PageX];
+  Shape63.Brush.Color := ShapeArray[63,PageX];
+  Shape64.Brush.Color := ShapeArray[64,PageX];
+  Shape65.Brush.Color := ShapeArray[65,PageX];
+  Shape66.Brush.Color := ShapeArray[66,PageX];
+  Shape67.Brush.Color := ShapeArray[67,PageX];
+  Shape68.Brush.Color := ShapeArray[68,PageX];
+  Shape69.Brush.Color := ShapeArray[69,PageX];
+  Shape70.Brush.Color := ShapeArray[70,PageX];
+  Shape71.Brush.Color := ShapeArray[71,PageX];
+  Shape72.Brush.Color := ShapeArray[72,PageX];
+  Shape73.Brush.Color := ShapeArray[73,PageX];
+  Shape74.Brush.Color := ShapeArray[74,PageX];
+  Shape75.Brush.Color := ShapeArray[75,PageX];
+  Shape76.Brush.Color := ShapeArray[76,PageX];
+  Shape77.Brush.Color := ShapeArray[77,PageX];
+  Shape78.Brush.Color := ShapeArray[78,PageX];
+  Shape79.Brush.Color := ShapeArray[79,PageX];
+  Shape80.Brush.Color := ShapeArray[80,PageX];
+  Shape81.Brush.Color := ShapeArray[81,PageX];
+  Shape82.Brush.Color := ShapeArray[82,PageX];
+  Shape83.Brush.Color := ShapeArray[83,PageX];
+  Shape84.Brush.Color := ShapeArray[84,PageX];
+  Shape85.Brush.Color := ShapeArray[85,PageX];
+  Shape86.Brush.Color := ShapeArray[86,PageX];
+  Shape87.Brush.Color := ShapeArray[87,PageX];
+  Shape88.Brush.Color := ShapeArray[88,PageX];
+  Shape89.Brush.Color := ShapeArray[89,PageX];
+  Shape90.Brush.Color := ShapeArray[90,PageX];
+  Shape91.Brush.Color := ShapeArray[91,PageX];
+  Shape92.Brush.Color := ShapeArray[92,PageX];
+  Shape93.Brush.Color := ShapeArray[93,PageX];
+  Shape94.Brush.Color := ShapeArray[94,PageX];
+  Shape95.Brush.Color := ShapeArray[95,PageX];
+  Shape96.Brush.Color := ShapeArray[96,PageX];
+  Shape97.Brush.Color := ShapeArray[97,PageX];
+  Shape98.Brush.Color := ShapeArray[98,PageX];
+  Shape99.Brush.Color := ShapeArray[99,PageX];
+  Shape100.Brush.Color := ShapeArray[100,PageX];
+  Shape101.Brush.Color := ShapeArray[101,PageX];
+  Shape102.Brush.Color := ShapeArray[102,PageX];
+  Shape103.Brush.Color := ShapeArray[103,PageX];
+  Shape104.Brush.Color := ShapeArray[104,PageX];
+  Shape105.Brush.Color := ShapeArray[105,PageX];
+  Shape106.Brush.Color := ShapeArray[106,PageX];
+  Shape107.Brush.Color := ShapeArray[107,PageX];
+  Shape108.Brush.Color := ShapeArray[108,PageX];
+  Shape109.Brush.Color := ShapeArray[109,PageX];
+  Shape110.Brush.Color := ShapeArray[110,PageX];
+  Shape111.Brush.Color := ShapeArray[111,PageX];
+  Shape112.Brush.Color := ShapeArray[112,PageX];
+  Shape113.Brush.Color := ShapeArray[113,PageX];
+  Shape114.Brush.Color := ShapeArray[114,PageX];
+  Shape115.Brush.Color := ShapeArray[115,PageX];
+  Shape116.Brush.Color := ShapeArray[116,PageX];
+  Shape117.Brush.Color := ShapeArray[117,PageX];
+  Shape118.Brush.Color := ShapeArray[118,PageX];
+  Shape119.Brush.Color := ShapeArray[119,PageX];
+  Shape120.Brush.Color := ShapeArray[120,PageX];
+  Shape121.Brush.Color := ShapeArray[121,PageX];
+  Shape122.Brush.Color := ShapeArray[122,PageX];
+  Shape123.Brush.Color := ShapeArray[123,PageX];
+  Shape124.Brush.Color := ShapeArray[124,PageX];
+  Shape125.Brush.Color := ShapeArray[125,PageX];
+  Shape126.Brush.Color := ShapeArray[126,PageX];
+  Shape127.Brush.Color := ShapeArray[127,PageX];
+  Shape128.Brush.Color := ShapeArray[128,PageX];
+  StatusBar1.Panels[2].Text := 'reassigned '
+        + IntToStr(PageX);
+  SBTimer.Enabled := True;
+end;
+
+
+procedure TForm1.Image1MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+var
+  NoteValue,VelValue : Integer;
+  T1,T2,T3,TVal:Real;
+  NoteName : String;
+begin
+     Screen.Cursor := crCross;
+     NewEvent := TMyMidiEvent.Create;
+     NewEvent.Time := 0;
+     NewEvent.MidiMessage := MIDI_NOTEON + ChannelSpin.Value - 1;
+     T1 := X;
+     T2 := Image1.Width;
+     T3 := 72;
+     TVal := (T1 / (T2 / T3)) - 0.5;
+     NoteValue := Round(TVal) + 24;
+     VelValue := 120 - (Image1.Height - Y);
+     NoteName := ComboBox1.Items[NoteValue-1];
+     SBTimer.Enabled := False;
+     StatusBar1.Panels[0].Text := 'Note = ' + NoteName;
+     StatusBar1.Panels[1].Text := 'Velocity = ' + IntToStr(VelValue);
+     SBTimer.Enabled := True;
+     Panel1.Tag := NoteValue;
+     NewEvent.Data1 := NoteValue;
+     NewEvent.Data2 := VelValue;
+     NewEvent.Sysex := nil;
+     NewEvent.SysexLength := 0;
+     MidiOutput1.PutMidiEvent(NewEvent);
+end;
+
+procedure TForm1.Image1MouseUp(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+     Screen.Cursor := crDefault;
+     NewEvent := TMyMidiEvent.Create;
+     NewEvent.Time := 0;
+     NewEvent.MidiMessage := MIDI_NOTEOFF;
+     NewEvent.Data1 := Panel1.Tag;
+     NewEvent.Data2 := 0;
+     NewEvent.Sysex := nil;
+     NewEvent.SysexLength := 0;
+     MidiOutput1.PutMidiEvent(NewEvent);
+end;
+
+procedure TForm1.cmbOutputChange(Sender: TObject);
+begin
+	{ Close and reopen devices with changed device selection }
+	Cursor := crHourglass;
+	CloseDevs;
+	OpenDevs;
+  Cursor := crDefault;
+end;
+
+procedure TForm1.OpenDevs;
+begin
+	{ Use selected devices }
+{	MidiInput1.ProductName := cmbInput.Text;}
+	MidiOutput1.ProductName := cmbOutput.Text;
+	{ Open devices }
+{	MidiInput1.Open;}
+{	MidiInput1.Start;}
+	MidiOutput1.Open;
+end;
+
+procedure TForm1.CloseDevs;
+begin
+{	MidiInput1.Close;}
+	MidiOutput1.Close;
+end;
+
+
+
+procedure TForm1.FormCreate(Sender: TObject);
+var
+	thisDevice: Word;
+  PageX:Integer;
+begin
+     Randomize;
+     Cursor := crHourglass;
+     for PageX := 1 to 16 do
+       AssignShapes(PageX);
+     NoteOnCtr := 0;
+     Interval  := 125;
+     Interval1  := 125;
+     RealInterval := 125;
+     IntervalCtr := 0;
+     BigCtr := 0;
+     SetTimes;
+	{ Load the lists of installed MIDI devices }
+{	cmbInput.Clear;
+	for thisDevice := 0 To MidiInput1.NumDevs - 1 do
+		begin
+		MidiInput1.DeviceID := thisDevice;
+		cmbInput.Items.Add(MidiInput1.ProductName);
+		end;
+	cmbInput.ItemIndex := 0;}
+	cmbOutput.Clear;
+	for thisDevice := 0 To MidiOutput1.NumDevs - 1 do
+		begin
+		MidiOutput1.DeviceID := thisDevice;
+		cmbOutput.Items.Add(MidiOutput1.ProductName);
+		end;
+	cmbOutput.ItemIndex := 0;
+	OpenDevs;
+  if TimeGetDevCaps(@TimeCaps1, SizeOf(TimeCaps1)) = TIMERR_NOERROR then
+    TimeBeginPeriod(TimeCaps1.wPeriodMin)
+  else
+    TimeCaps1.wPeriodMin := 0;
+  Accur := Interval div 2;
+  if Accur > TimeCaps1.wPeriodMin then
+    Accur := TimeCaps1.wPeriodMin;
+  if Accur > TimeCaps1.wPeriodMax then
+    Accur := TimeCaps1.wPeriodMax;
+  Cursor := crDefault;
+end;
+
+procedure TForm1.Shape1MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape1);
+end;
+
+procedure TForm1.UpdateThisShape(ThisShape:TShape);
+begin
+  if ThisShape.Brush.Color = clWhite then
+    begin
+      ThisShape.Brush.Color := clRed;
+      inc(NoteOnCtr);
+    end
+  else
+    begin
+      ThisShape.Brush.Color := clWhite;
+      dec(NoteOnCtr);
+    end;
+end;
+
+procedure TForm1.Shape2MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape2);
+end;
+
+procedure TForm1.Shape3MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape3);
+end;
+
+procedure TForm1.Shape4MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape4);
+end;
+
+procedure TForm1.Shape5MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape5);
+end;
+
+procedure TForm1.Shape6MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape6);
+end;
+
+procedure TForm1.BitBtn1Click(Sender: TObject);
+begin
+  TXThen := Now;
+//  Timer2.Enabled := True;
+  timeKillEvent(TimerID1);
+  TimerTag := 99;
+  TimerID1 := TimeSetEvent(Interval, Accur, @MMTimerProc, 10, TIME_PERIODIC);
+end;
+
+procedure TForm1.BitBtn2Click(Sender: TObject);
+begin
+  timeKillEvent(TimerID1);
+  BitBtn5Click(Sender);
+  IntervalCtr := 0;
+  BigCtr := 0;
+  Timer2.Enabled := False;
+  Timer2.Tag := 0;
+  Label1.Font.Color := clBlack;
+  Label2.Font.Color := clBlack;
+  Label3.Font.Color := clBlack;
+  Label4.Font.Color := clBlack;
+  Label5.Font.Color := clBlack;
+  Label6.Font.Color := clBlack;
+  Label7.Font.Color := clBlack;
+  Label8.Font.Color := clBlack;
+  Label9.Font.Color := clBlack;
+  Label10.Font.Color := clBlack;
+  Label11.Font.Color := clBlack;
+  Label12.Font.Color := clBlack;
+  Label13.Font.Color := clBlack;
+  Label14.Font.Color := clBlack;
+  Label15.Font.Color := clBlack;
+  Label16.Font.Color := clBlack;
+  Label17.Font.Color := clBlack;
+end;
+
+procedure TForm1.Shape7MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape7);
+end;
+
+procedure TForm1.Shape8MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape8);
+end;
+
+procedure TForm1.Shape9MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape9);
+end;
+
+procedure TForm1.Shape10MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape10);
+end;
+
+procedure TForm1.Shape11MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape11);
+end;
+
+procedure TForm1.Shape12MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape12);
+end;
+
+procedure TForm1.Shape13MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape13);
+end;
+
+procedure TForm1.Shape14MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape14);
+end;
+
+procedure TForm1.Shape15MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape15);
+end;
+
+procedure TForm1.Shape16MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape16);
+end;
+
+procedure TForm1.PlayaNote(NoteVal:Integer);
+begin
+     NewEvent := TMyMidiEvent.Create;
+     NewEvent.Time := 0;
+     NewEvent.MidiMessage := MIDI_NOTEON + ChannelSpin.Value - 1;
+     NewEvent.Data1 := NoteVal;
+     NewEvent.Data2 := VeloSpin.Value;
+     NewEvent.Sysex := nil;
+     NewEvent.SysexLength := 0;
+     MidiOutput1.PutMidiEvent(NewEvent);
+end;
+
+
+procedure TForm1.TempoSpinChange(Sender: TObject);
+var T1,T2,T3,T4,TempInterval:Real;
+begin
+  TempoButton.Enabled := True;
+//  SpinEdit5.MaxValue := TempoSpin.Value;
+//  CopySpinEdit.MaxValue := TempoSpin.Value;
+  T1 := TempoSpin.Value;
+  T2 := 60;
+  T3 := 4;
+  T4 := 1000;
+  TempInterval := (T4 / (T1 / T2)) / T3;
+//  TwoInterval := 2 * TempInterval;
+//  HalfInterval := 4 * TempInterval;
+//  BigInterval := 16 * TempInterval;
+  Interval1 := Round(TempInterval) - 1;
+  RealInterval := TempInterval;
+  Timer2.Interval := Interval1;
+  Interval := Interval1;
+  Accur := Interval div 2;
+  if Accur > TimeCaps1.wPeriodMin then
+    Accur := TimeCaps1.wPeriodMin;
+  if Accur > TimeCaps1.wPeriodMax then
+    Accur := TimeCaps1.wPeriodMax;
+
+//  StatusBar1.Panels[1].Text := 'Interval=' + IntToStr(Interval1);
+  SetTimes;
+end;
+
+
+procedure TForm1.SetTimes;
+var T1,T2,T3,T4,TempInterval:Real;
+begin
+  T1 := TempoSpin.Value;
+  T2 := 60;
+  T3 := 4;
+  T4 := 1000;
+  TempInterval := (T4 / (T1 / T2)) / T3;
+  TimeArray[0] := 0;
+  TimeArray[1] := Round(TempInterval) - 1;
+  TimeArray[2] := Round(2 * TempInterval) - 1;
+  TimeArray[3] := Round(3 * TempInterval) - 1;
+  TimeArray[4] := Round(4 * TempInterval) - 1;
+  TimeArray[5] := Round(5 * TempInterval) - 1;
+  TimeArray[6] := Round(6 * TempInterval) - 1;
+  TimeArray[7] := Round(7 * TempInterval) - 1;
+  TimeArray[8] := Round(8 * TempInterval) - 1;
+  TimeArray[9] := Round(9 * TempInterval) - 1;
+  TimeArray[10] := Round(10 * TempInterval) - 1;
+  TimeArray[11] := Round(11 * TempInterval) - 1;
+  TimeArray[12] := Round(12 * TempInterval) - 1;
+  TimeArray[13] := Round(13 * TempInterval) - 1;
+  TimeArray[14] := Round(14 * TempInterval) - 1;
+  TimeArray[15] := Round(15 * TempInterval) - 1;
+  TimeArray[16] := Round(16 * TempInterval) - 1;
+  TimeArray[17] := TimeArray[1] + TimeArray[16];
+end;
+
+procedure TForm1.BitBtn3Click(Sender: TObject);
+begin
+  BitBtn2Click(Sender);
+  Form1.Close;
+end;
+
+procedure TForm1.ProgramSpinChange(Sender: TObject);
+begin
+     NewEvent := TMyMidiEvent.Create;
+     NewEvent.Time := 0;
+     NewEvent.MidiMessage := MIDI_PROGRAMCHANGE  + ChannelSpin.Value - 1;
+     NewEvent.Data1 := ProgramSpin.Value;
+     NewEvent.Data2 := 0;
+     NewEvent.Sysex := nil;
+     NewEvent.SysexLength := 0;
+     MidiOutput1.PutMidiEvent(NewEvent);
+end;
+
+procedure TForm1.BitBtn5Click(Sender: TObject);
+var TY,TX : Integer;
+begin
+//  for TY := 0 to 15 do
+  for TX := 0 to 127 do
+    begin
+      NewEvent := TMyMidiEvent.Create;
+      NewEvent.Time := 0;
+      NewEvent.MidiMessage := MIDI_NOTEOFF + Form1.ChannelSpin.Value - 1;
+      NewEvent.Data1 := TX;
+      NewEvent.Data2 := 0;
+      NewEvent.Sysex := nil;
+      NewEvent.SysexLength := 0;
+      MidiOutput1.PutMidiEvent(NewEvent);
+    end;
+end;
+
+procedure TForm1.Shape17MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape17);
+end;
+
+procedure TForm1.Shape18MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape18);
+end;
+
+procedure TForm1.Shape19MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape19);
+end;
+
+procedure TForm1.Shape20MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape20);
+end;
+
+procedure TForm1.Shape21MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape21);
+end;
+
+procedure TForm1.Shape22MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape22);
+end;
+
+procedure TForm1.Shape23MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape23);
+end;
+
+procedure TForm1.Shape24MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape24);
+end;
+
+procedure TForm1.Shape25MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape25);
+end;
+
+procedure TForm1.Shape26MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape26);
+end;
+
+procedure TForm1.Shape27MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape27);
+end;
+
+procedure TForm1.Shape28MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape28);
+end;
+
+procedure TForm1.Shape29MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape29);
+end;
+
+procedure TForm1.Shape30MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape30);
+end;
+
+procedure TForm1.Shape31MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape31);
+end;
+
+procedure TForm1.Shape32MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape32);
+end;
+
+procedure TForm1.Shape33MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape33);
+end;
+
+procedure TForm1.Shape34MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape34);
+end;
+
+procedure TForm1.Shape35MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape35);
+end;
+
+procedure TForm1.Shape36MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape36);
+end;
+
+procedure TForm1.Shape37MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape37);
+end;
+
+procedure TForm1.Shape38MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape38);
+end;
+
+procedure TForm1.Shape39MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape39);
+end;
+
+procedure TForm1.Shape40MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape40);
+end;
+
+procedure TForm1.Shape41MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape41);
+end;
+
+procedure TForm1.Shape42MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape42);
+end;
+
+procedure TForm1.Shape43MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape43);
+end;
+
+procedure TForm1.Shape44MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape44);
+end;
+
+procedure TForm1.Shape45MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape45);
+end;
+
+procedure TForm1.Shape46MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape46);
+end;
+
+procedure TForm1.Shape47MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape47);
+end;
+
+procedure TForm1.Shape48MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape48);
+end;
+
+procedure TForm1.BitBtn4Click(Sender: TObject);
+var
+  TX:Integer;
+  PageX:Integer;
+begin
+  if PageGroup.ItemIndex = 0 then
+    begin
+      PageX := SpinEdit1.Value;
+      NoteOnCtr := 0;
+      for TX := 1 to 128 do
+        ShapeArray[TX,PageX] := clWhite;
+      ReAssignShapes(PageX);
+    end
+  else
+    begin
+      for PageX := 1 to SpinEdit5.Value do
+        begin
+          NoteOnCtr := 0;
+          for TX := 1 to 128 do
+            ShapeArray[TX,PageX] := clWhite;
+          ReAssignShapes(PageX);
+        end;
+    end;
+end;
+
+procedure TForm1.BitBtn6Click(Sender: TObject);
+var
+  RandX,TX,TY,TZ:Integer;
+  PageX:Integer;
+begin
+  if PageGroup.ItemIndex = 0 then
+    begin
+      PageX := SpinEdit1.Value;
+      TZ := 0;
+      for TY := 1 to 8 do
+        begin
+          if CheckBoxArray[TY].Checked then
+            begin
+              for TX := 1 to 16 do
+                begin
+                  RandX := Random(24);
+                  if RandX > TrackBar1.Position then
+                    ShapeArray[TZ+TX,PageX] := clWhite
+                  else
+                    ShapeArray[TZ+TX,PageX] := clRed;
+                end;
+            end;
+          TZ := TZ + 16;
+        end;
+      NoteOnCtr := 0;
+      for TX := 1 to 128 do
+        if ShapeArray[TX,PageX] = clRed then inc(NoteOnCtr);
+      ReAssignShapes(PageX);
+    end
+  else
+    begin
+      for PageX := 1 to SpinEdit5.Value do
+        begin
+          TZ := 0;
+          for TY := 1 to 8 do
+            begin
+              if CheckBoxArray[TY].Checked then
+                begin
+                  for TX := 1 to 16 do
+                    begin
+                      RandX := Random(24);
+                      if RandX > TrackBar1.Position then
+                        ShapeArray[TZ+TX,PageX] := clWhite
+                      else
+                        ShapeArray[TZ+TX,PageX] := clRed;
+                    end;
+                end;
+              TZ := TZ + 16;
+            end;
+          NoteOnCtr := 0;
+          for TX := 1 to 128 do
+            if ShapeArray[TX,PageX] = clRed then inc(NoteOnCtr);
+          ReAssignShapes(PageX);
+        end;
+    end;
+end;
+
+procedure TForm1.Save1Click(Sender: TObject);
+var
+  F1: File;
+  TmpTempo : Real;
+  TX,TY: Integer;
+  IntTempo1, IntTempo2, IntTempo3 : Integer;
+  Chunk4 : array[1..4] of Char;
+  Chunk5 : array[1..5] of Char;
+  Chunk6 : array[1..6] of Char;
+  Chunk7 : array[1..7] of Char;
+  Chunk8 : array[1..8] of Char;
+  WriteCtr : Integer;
+  IntF, TV1, TV2, TV3, TVSave: Integer;
+  PageX:Integer;
+begin
+  PageX := SpinEdit1.Value;
+  if SaveDialog1.Execute then
+    begin
+      WriteCtr := 0;
+      AssignFile(F1, SaveDialog1.Filename);
+      FileMode := 2;
+      Rewrite(F1,1);
+
+// MThd header chunk - length is 6
+      Chunk4 := 'MThd';
+      BlockWrite(F1, Chunk4, 4);
+      Chunk4[1] := Chr(0);
+      Chunk4[2] := Chr(0);
+      Chunk4[3] := Chr(0);
+      Chunk4[4] := Chr(6);
+      BlockWrite(F1, Chunk4, 4);
+
+// Header chunk data - 01 (midi file format) 02 (track count) 96 (delta time interval)
+      Chunk6[1] := Chr(0);
+      Chunk6[2] := Chr(1);
+      Chunk6[3] := Chr(0);
+      Chunk6[4] := Chr(2);
+      Chunk6[5] := Chr(0);
+      Chunk6[6] := Chr(96);
+      BlockWrite(F1, Chunk6, 6);
+
+// first track chunk - length is 19
+      Chunk4 := 'MTrk';
+      BlockWrite(F1, Chunk4, 4);
+
+      Chunk4[1] := Chr(0);
+      Chunk4[2] := Chr(0);
+      Chunk4[3] := Chr(0);
+      Chunk4[4] := Chr(19);
+      BlockWrite(F1, Chunk4, 4);
+
+// tempo calculation
+      TmpTempo := 60000000 / TempoSpin.Value;
+      IntTempo1 := Trunc (TmpTempo / (256 * 256));
+      TmpTempo := TmpTempo - (IntTempo1 * (256 * 256));
+      IntTempo2 := Trunc (TmpTempo / 256);
+      TmpTempo := TmpTempo - (IntTempo1 * (256));
+      IntTempo3 := Trunc (TmpTempo);
+
+// tempo chunk
+      Chunk7[1] := Chr($00);
+      Chunk7[2] := Chr($FF);
+      Chunk7[3] := Chr($51);
+      Chunk7[4] := Chr($03);
+      Chunk7[5] := Chr(IntTempo1);
+      Chunk7[6] := Chr(IntTempo2);
+      Chunk7[7] := Chr(IntTempo3);
+      BlockWrite(F1, Chunk7, 7);
+
+// time signature chunk
+      Chunk8[1] := Chr($00);
+      Chunk8[2] := Chr($FF);
+      Chunk8[3] := Chr($58);
+      Chunk8[4] := Chr($04);
+      Chunk8[5] := Chr(04);
+      Chunk8[6] := Chr(02);
+      Chunk8[7] := Chr(24);
+      Chunk8[8] := Chr(08);
+      BlockWrite(F1, Chunk8, 8);
+
+
+      Chunk4[1] := Chr($00);
+      Chunk4[2] := Chr($FF);
+      Chunk4[3] := Chr($2F);
+      Chunk4[4] := Chr(00);
+      BlockWrite(F1, Chunk4, 4);
+
+
+// second track
+      Chunk4 := 'MTrk';
+      BlockWrite(F1, Chunk4, 4);
+
+// try to calculate data length based on notes
+      Chunk4[1] := Chr(0);
+      TV1 := 9 + (5 * (NoteOnCtr * 2));
+//      TV3 := TV1 div 16383;
+//      TV1 := TV1 - (16383 * TV3);
+      TV2 := TV1 div 256;
+      TV1 := TV1 - (256 * TV2);
+//      Chunk4[2] := Chr(TV3);
+      Chunk4[2] := Chr(0);
+      Chunk4[3] := Chr(TV2);
+//      Chunk4[3] := Chr(0);
+      Chunk4[4] := Chr(TV1);
+
+      BlockWrite(F1, Chunk4, 4);
+
+{      Chunk4[1] := Chr($00);
+      Chunk4[2] := Chr($FF);
+      Chunk4[3] := Chr($03);
+      Chunk4[4] := Chr(20);
+      BlockWrite(F1, Chunk4, 4);
+      Chunk4[1] := 'P';
+      Chunk4[2] := 'h';
+      Chunk4[3] := 'a';
+      Chunk4[4] := 't';
+      BlockWrite(F1, Chunk4, 4);
+      Chunk4[1] := 'h';
+      Chunk4[2] := 'e';
+      Chunk4[3] := 'a';
+      Chunk4[4] := 'd';
+      BlockWrite(F1, Chunk4, 4);
+      Chunk4[1] := ' ';
+      Chunk4[2] := 'C';
+      Chunk4[3] := 'o';
+      Chunk4[4] := 'n';
+      BlockWrite(F1, Chunk4, 4);
+      Chunk4[1] := 't';
+      Chunk4[2] := 'r';
+      Chunk4[3] := 'o';
+      Chunk4[4] := 'l';
+      BlockWrite(F1, Chunk4, 4);
+      Chunk4[1] := 'l';
+      Chunk4[2] := 'e';
+      Chunk4[3] := 'r';
+      Chunk4[4] := ' ';
+      BlockWrite(F1, Chunk4, 4);  }
+ // put the notes here
+
+
+     Chunk5[1] := Chr(0+128);
+     Chunk5[2] := Chr(0);
+     Chunk5[3] := Chr(MIDI_PROGRAMCHANGE + ChannelSpin.Value - 1);
+     Chunk5[4] := Chr(ProgramSpin.Value);
+     Chunk5[5] := Chr(0);
+     BlockWrite(F1, Chunk5, 5);
+
+
+     TVSave := 0;
+      for TX := 1 to 16 do
+        begin
+          TV1 := Round(24 * (TX - 1)) - TVSave;
+          TV3 := TV1;
+          for TY := 0 to 7 do
+            begin
+              if ShapeArray[TX + (16*TY),PageX] = clRed then
+                begin
+                  IntF := StrToInt(Copy(ComboArray[TY + 1].Text,1,2));
+                  TV2 := TV3 div 127;
+                  TV3 := TV3 - (127 * TV2);
+                  Chunk5[1] := Chr(TV2+128);
+                  Chunk5[2] := Chr(TV3);
+                  Chunk5[3] := Chr(MIDI_NOTEON + ChannelSpin.Value - 1);
+                  Chunk5[4] := Chr(IntF);
+                  Chunk5[5] := Chr(VeloSpin.Value);
+                  BlockWrite(F1, Chunk5, 5);
+                  inc(WriteCtr);
+                  TV3 := 0;
+                end; // shape array
+              if TX > 1 then
+                begin
+                  if ShapeArray[(TX - 1) + (16*(TY)),PageX] = clRed then
+                    begin
+                      IntF := StrToInt(Copy(ComboArray[TY + 1].Text,1,2));
+                      TV2 := TV3 div 127;
+                      TV3 := TV3 - (127 * TV2);
+                      Chunk5[1] := Chr(TV2+128);
+                      Chunk5[2] := Chr(TV3);
+                      Chunk5[3] := Chr(MIDI_NOTEON + ChannelSpin.Value - 1);
+                      Chunk5[4] := Chr(IntF);
+                      Chunk5[5] := Chr(0);
+                      BlockWrite(F1, Chunk5, 5);
+                      TV3 := 0;
+                      inc(WriteCtr);
+                    end; //shape array
+                end;  // tx > 1
+            end; // ty 0 - 7
+          TVSave := TVSave + TV1;
+        end;
+      TX := 17;
+      for TY := 0 to 7 do
+        begin
+          if ShapeArray[(TX - 1) + (16*TY),PageX] = clRed then
+            begin
+              TV1 := Round(24 * (TX )) - TVSave;
+              IntF := StrToInt(Copy(ComboArray[TY + 1].Text,1,2));
+              TV2 := TV1 div 127;
+              TV1 := TV1 - (127 * TV2);
+              Chunk5[1] := Chr(TV2+128);
+              Chunk5[2] := Chr(TV1);
+              Chunk5[3] := Chr(MIDI_NOTEON);
+              Chunk5[4] := Chr(IntF);
+              Chunk5[5] := Chr(0);
+              BlockWrite(F1, Chunk5, 5);
+            end;
+        end;
+
+// trailer
+      Chunk4[1] := Chr($00);
+      Chunk4[2] := Chr($FF);
+      Chunk4[3] := Chr($2F);
+      Chunk4[4] := Chr(00);
+      BlockWrite(F1, Chunk4, 4);
+      CloseFile(F1);
+      SBTimer.Enabled := False;
+      StatusBar1.Panels[2].Text := 'written '
+        + IntToStr(NoteOnCtr) + ' ' + IntToStr(WriteCtr);
+      SBTimer.Enabled := True;
+    end; //save dialog
+end;
+
+
+procedure TForm1.Shape49MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape49);
+end;
+
+procedure TForm1.Shape50MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape50);
+end;
+
+procedure TForm1.Shape51MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape51);
+end;
+
+procedure TForm1.Shape52MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape52);
+end;
+
+procedure TForm1.Shape53ContextPopup(Sender: TObject; MousePos: TPoint;
+  var Handled: Boolean);
+begin
+  UpdateThisShape(Shape53);
+end;
+
+procedure TForm1.Shape54MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape54);
+end;
+
+procedure TForm1.Shape55MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape55);
+end;
+
+procedure TForm1.Shape56MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape56);
+end;
+
+procedure TForm1.Shape57MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape57);
+end;
+
+procedure TForm1.Shape58MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape58);
+end;
+
+procedure TForm1.Shape59MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape59);
+end;
+
+procedure TForm1.Shape60MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape60);
+end;
+
+procedure TForm1.Shape61MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape61);
+end;
+
+procedure TForm1.Shape62MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape62);
+end;
+
+procedure TForm1.Shape63MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape63);
+end;
+
+procedure TForm1.Shape64MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape64);
+end;
+
+procedure TForm1.Shape53MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape53);
+end;
+
+procedure TForm1.Shape65MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape65);
+end;
+
+procedure TForm1.Shape66MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape66);
+end;
+
+procedure TForm1.Shape67MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape67);
+end;
+
+procedure TForm1.Shape68MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape68);
+end;
+
+procedure TForm1.Shape69MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape69);
+end;
+
+procedure TForm1.Shape70MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape70);
+end;
+
+procedure TForm1.Shape71MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape71);
+end;
+
+procedure TForm1.Shape72MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape72);
+end;
+
+procedure TForm1.Shape73MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape73);
+end;
+
+procedure TForm1.Shape74MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape74);
+end;
+
+procedure TForm1.Shape75MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape75);
+end;
+
+procedure TForm1.Shape76MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape76);
+end;
+
+procedure TForm1.Shape77MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape77);
+end;
+
+procedure TForm1.Shape78MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape78);
+end;
+
+procedure TForm1.Shape79MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape79);
+end;
+
+procedure TForm1.Shape80MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape80);
+end;
+
+procedure TForm1.Shape81MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape81);
+end;
+
+procedure TForm1.Shape82MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape82);
+end;
+
+procedure TForm1.Shape83MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape83);
+end;
+
+procedure TForm1.Shape84MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape84);
+end;
+
+procedure TForm1.Shape85MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape85);
+end;
+
+procedure TForm1.Shape86MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape86);
+end;
+
+procedure TForm1.Shape87MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape87);
+end;
+
+procedure TForm1.Shape88MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape88);
+end;
+
+procedure TForm1.Shape89MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape89);
+end;
+
+procedure TForm1.Shape90MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape90);
+end;
+
+procedure TForm1.Shape91MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape91);
+end;
+
+procedure TForm1.Shape92MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape92);
+end;
+
+procedure TForm1.Shape93MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape93);
+end;
+
+procedure TForm1.Shape94MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape94);
+end;
+
+procedure TForm1.Shape95MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape95);
+end;
+
+procedure TForm1.Shape96MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape96);
+end;
+
+procedure TForm1.Shape97MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape97);
+end;
+
+procedure TForm1.Shape98MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape98);
+end;
+
+procedure TForm1.Shape99MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape99);
+end;
+
+procedure TForm1.Shape100MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape100);
+end;
+
+procedure TForm1.Shape101MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape101);
+end;
+
+procedure TForm1.Shape102MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape102);
+end;
+
+procedure TForm1.Shape103MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape103);
+end;
+
+procedure TForm1.Shape104MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape104);
+end;
+
+procedure TForm1.Shape105MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape105);
+end;
+
+procedure TForm1.Shape106MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape106);
+end;
+
+procedure TForm1.Shape107MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape107);
+end;
+
+procedure TForm1.Shape108MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape108);
+end;
+
+procedure TForm1.Shape109MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape109);
+end;
+
+procedure TForm1.Shape110MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape110);
+end;
+
+procedure TForm1.Shape111MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape111);
+end;
+
+procedure TForm1.Shape112MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape112);
+end;
+
+procedure TForm1.Shape113MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape113);
+end;
+
+procedure TForm1.Shape114MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape114);
+end;
+
+procedure TForm1.Shape115MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape115);
+end;
+
+procedure TForm1.Shape116MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape116);
+end;
+
+procedure TForm1.Shape117MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape117);
+end;
+
+procedure TForm1.Shape118MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape118);
+end;
+
+procedure TForm1.Shape119MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape119);
+end;
+
+procedure TForm1.Shape120MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape120);
+end;
+
+procedure TForm1.Shape121MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape121);
+end;
+
+procedure TForm1.Shape122MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape122);
+end;
+
+procedure TForm1.Shape123MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape123);
+end;
+
+procedure TForm1.Shape124MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape124);
+end;
+
+procedure TForm1.Shape125MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape125);
+end;
+
+procedure TForm1.Shape126MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape126);
+end;
+
+procedure TForm1.Shape127MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape127);
+end;
+
+procedure TForm1.Shape128MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  UpdateThisShape(Shape128);
+end;
+
+procedure TForm1.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  timeKillEvent(TimerID1);
+end;
+
+procedure TForm1.BitBtn8Click(Sender: TObject);
+var
+  SaveArray : array [0..15] of Integer;
+  TX,TY:Integer;
+  PageX:Integer;
+begin
+  PageX := SpinEdit1.Value;
+  for TY := 0 to 7 do
+      SaveArray[TY] := ShapeArray[1 + (16*TY),PageX];
+  for TX := 1 to 15 do
+    for TY := 0 to 7 do
+      ShapeArray[TX + (16*TY),PageX] := ShapeArray[TX + 1 + (16 * TY),PageX];
+  for TY := 0 to 7 do
+      ShapeArray[16 + (16*TY),PageX] := SaveArray[TY];
+end;
+
+procedure TForm1.BitBtn9Click(Sender: TObject);
+var
+  SaveArray : array [0..7] of Integer;
+  TX,TY:Integer;
+  PageX:Integer;
+begin
+  PageX := SpinEdit1.Value;
+  for TY := 0 to 7 do
+      SaveArray[TY] := ShapeArray[16 + (16*TY),PageX];
+  for TX := 16 downto 2 do
+    for TY := 0 to 7 do
+      ShapeArray[TX + (16*TY),PageX] := ShapeArray[TX -1 + (16 * TY),PageX];
+  for TY := 0 to 7 do
+      ShapeArray[1 + (16*TY),PageX] := SaveArray[TY];
+end;
+
+procedure TForm1.BitBtn10Click(Sender: TObject);
+var
+  Tmin,Tmax:Integer;
+begin
+  Tmin := MInEdit.Value;
+  Tmax := MaxEdit.Value;
+  if CheckBox9.Checked then
+    ComboBox1.Text := ComboBox1.Items[Random(Tmax-Tmin) + Tmin];
+  if CheckBox10.Checked then
+    ComboBox2.Text := ComboBox2.Items[Random(Tmax-Tmin) + Tmin];
+  if CheckBox11.Checked then
+    ComboBox3.Text := ComboBox3.Items[Random(Tmax-Tmin) + Tmin];
+  if CheckBox12.Checked then
+    ComboBox4.Text := ComboBox4.Items[Random(Tmax-Tmin) + Tmin];
+  if CheckBox13.Checked then
+    ComboBox5.Text := ComboBox5.Items[Random(Tmax-Tmin) + Tmin];
+  if CheckBox14.Checked then
+    ComboBox6.Text := ComboBox6.Items[Random(Tmax-Tmin) + Tmin];
+  if CheckBox15.Checked then
+    ComboBox7.Text := ComboBox7.Items[Random(Tmax-Tmin) + Tmin];
+  if CheckBox16.Checked then
+    ComboBox8.Text := ComboBox8.Items[Random(Tmax-Tmin) + Tmin];
+//  if KeyCheck.Checked then BitBtn11Click(Sender);
+end;
+
+procedure TForm1.BitBtn11Click(Sender: TObject);
+begin
+  ComboBox1.Text := '36=Bass Drum 1';
+  ComboBox2.Text := '38=Acoustic Snare';
+  ComboBox3.Text := '42=Close Hi-Hat';
+  ComboBox4.Text := '46=Open Hi-Hat';
+  ComboBox5.Text := '41=Low Floor Tom';
+  ComboBox6.Text := '47=Low-Mid Tom';
+  ComboBox7.Text := '50=High Tom';
+  ComboBox8.Text := '49=Crash Cymbal 1';
+end;
+
+procedure TForm1.BitBtn7Click(Sender: TObject);
+var
+  RandX,TX,TY,TZ,TD1,TD2:Integer;
+  TD_On, TD_Off:Integer;
+  ChangeIt:Boolean;
+  PageX:Integer;
+begin
+  PageX := SpinEdit1.Value;
+  TZ := 0;
+  for TY := 1 to 8 do
+    begin
+      if CheckBoxArray[TY].Checked then
+        begin
+          for TX := 1 to 16 do
+            begin
+              TD1 := (240 div ((TrackBar1.Position + 1))); //24 - 2
+              TD1 := 10000 div TD1; //40 - 500
+              TD_On := 1000 - TD1; //960 - 500
+              TD_On := (TD_On * TD1) div 1000; //40 - 250
+              TD_Off := (TD1) - TD_On;
+              RandX := Random(1000);
+              ChangeIt := False;
+              if ShapeArray[TZ+TX,PageX] = clRed then
+                if RandX < TD_On then ChangeIt := True;
+              if ShapeArray[TZ+TX,PageX] = clWhite then
+                if RandX < TD_Off then ChangeIt := True;
+              if ChangeIt then
+                if ShapeArray[TZ+TX,PageX] = clWhite then
+                  ShapeArray[TZ+TX,PageX] := clRed
+                else
+                  ShapeArray[TZ+TX,PageX] := clWhite;
+            end;
+        end;
+      TZ := TZ + 16;
+    end;
+
+  NoteOnCtr := 0;
+  for TX := 1 to 128 do
+    if ShapeArray[TX,PageX] = clRed then inc(NoteOnCtr);
+//  StatusBar1.Panels[2].Text := IntToStr(NoteOnCtr) + ' '
+//    + IntToStr(TD_On) + ' ' + IntToStr(TD_Off);
+  ReAssignShapes(PageX);
+end;
+
+procedure TForm1.KeyComboChange(Sender: TObject);
+begin
+  BitBtn11Click(Sender);
+end;
+
+procedure TForm1.Label5DblClick(Sender: TObject);
+begin
+//  if Label5.Font.Size = 
+end;
+
+procedure TForm1.MutateButtonClick(Sender: TObject);
+var
+  Tmin,Tmax,TRand:Integer;
+begin
+  Tmin := MInEdit.Value;
+  Tmax := MaxEdit.Value;
+  TRand := Random(16);
+  if ((CheckBox9.Checked) and (TRand = 5)) then
+    ComboBox1.Text := ComboBox1.Items[Random(Tmax-Tmin) + Tmin];
+  TRand := Random(16);
+  if ((CheckBox10.Checked) and (TRand = 5)) then
+    ComboBox2.Text := ComboBox2.Items[Random(Tmax-Tmin) + Tmin];
+  TRand := Random(16);
+  if ((CheckBox11.Checked) and (TRand = 5)) then
+    ComboBox3.Text := ComboBox3.Items[Random(Tmax-Tmin) + Tmin];
+  TRand := Random(16);
+  if ((CheckBox12.Checked) and (TRand = 5)) then
+    ComboBox4.Text := ComboBox4.Items[Random(Tmax-Tmin) + Tmin];
+  TRand := Random(16);
+  if ((CheckBox13.Checked) and (TRand = 5)) then
+    ComboBox5.Text := ComboBox5.Items[Random(Tmax-Tmin) + Tmin];
+  TRand := Random(16);
+  if ((CheckBox14.Checked) and (TRand = 5)) then
+    ComboBox6.Text := ComboBox6.Items[Random(Tmax-Tmin) + Tmin];
+  TRand := Random(16);
+  if ((CheckBox15.Checked) and (TRand = 5)) then
+    ComboBox7.Text := ComboBox7.Items[Random(Tmax-Tmin) + Tmin];
+  TRand := Random(16);
+  if ((CheckBox16.Checked) and (TRand = 5)) then
+    ComboBox8.Text := ComboBox8.Items[Random(Tmax-Tmin) + Tmin];
+//  if KeyCheck.Checked then BitBtn11Click(Sender);
+end;
+
+procedure TForm1.Exit1Click(Sender: TObject);
+begin
+  Form1.Close;
+end;
+
+procedure TForm1.SBTimerTimer(Sender: TObject);
+begin
+  StatusBar1.Panels[0].Text := '';
+  StatusBar1.Panels[1].Text := '';
+  StatusBar1.Panels[2].Text := '';
+end;
+
+procedure TForm1.BitBtn12Click(Sender: TObject);
+var
+  SaveArray : array [0..7] of Integer;
+  TX,TY:Integer;
+  PageX:Integer;
+begin
+  PageX := SpinEdit1.Value;
+  for TX := 0 to 15 do
+      SaveArray[TX] := ShapeArray[1 + (8*TX),PageX];
+  for TX := 0 to 15 do
+    for TY := 0 to 6 do
+      ShapeArray[TX + (16*TY),PageX] := ShapeArray[TX + (16 * (TY + 1)),PageX];
+  for TX := 0 to 15 do
+      ShapeArray[8 + (8*TY),PageX] := SaveArray[TX];
+end;
+
+procedure TForm1.SpinEdit1Change(Sender: TObject);
+var
+  PageX:Integer;
+begin
+  PageX := SpinEdit1.Tag;
+  AssignShapes(PageX);
+  PageX := SpinEdit1.Value;
+  ReAssignShapes(PageX);
+  SpinEdit1.Tag := SpinEdit1.Value;
+  if SpinEdit1.Value > SpinEdit5.Value then
+    SpinEdit1.Value := SpinEdit5.Value;
+end;
+
+procedure TForm1.BitBtn14Click(Sender: TObject);
+var
+  PageX,PageY:Integer;
+begin
+      PageX := SpinEdit1.Value;
+      PageY := CopySpinEdit.Value;
+      ReAssignShapes(PageX);
+      if PageY <> 0 then
+        begin
+          AssignShapes(PageY);
+        end
+      else
+        begin
+          for PageY := 1 to SpinEdit5.MaxValue do
+          AssignShapes(PageY);
+        end;
+end;
+
+procedure TForm1.Label2Click(Sender: TObject);
+begin
+  if Label2.Color = clBtnFace then
+    Label2.Color := clWhite
+  else
+    Label2.Color := clBtnFace;
+end;
+
+procedure TForm1.Label3Click(Sender: TObject);
+begin
+  if Label3.Color = clBtnFace then
+    Label3.Color := clWhite
+  else
+    Label3.Color := clBtnFace;
+end;
+
+procedure TForm1.Label4Click(Sender: TObject);
+begin
+  if Label4.Color = clBtnFace then
+    Label4.Color := clWhite
+  else
+    Label4.Color := clBtnFace;
+end;
+
+procedure TForm1.Label5Click(Sender: TObject);
+begin
+  if Label5.Color = clBtnFace then
+    Label5.Color := clWhite
+  else
+    Label5.Color := clBtnFace;
+end;
+
+procedure TForm1.Label6Click(Sender: TObject);
+begin
+  if Label6.Color = clBtnFace then
+    Label6.Color := clWhite
+  else
+    Label6.Color := clBtnFace;
+end;
+
+procedure TForm1.Label7Click(Sender: TObject);
+begin
+  if Label7.Color = clBtnFace then
+    Label7.Color := clWhite
+  else
+    Label7.Color := clBtnFace;
+end;
+
+procedure TForm1.Label8Click(Sender: TObject);
+begin
+  if Label8.Color = clBtnFace then
+    Label8.Color := clWhite
+  else
+    Label8.Color := clBtnFace;
+end;
+
+procedure TForm1.Label9Click(Sender: TObject);
+begin
+  if Label9.Color = clBtnFace then
+    Label9.Color := clWhite
+  else
+    Label9.Color := clBtnFace;
+end;
+
+procedure TForm1.TempoButtonClick(Sender: TObject);
+begin
+  TempoButton.Enabled := False;
+  timeKillEvent(TimerID1);
+  TimerID1 := TimeSetEvent(Interval, Accur, @MMTimerProc, 10, TIME_PERIODIC);
+end;
+
+procedure TForm1.Label10Click(Sender: TObject);
+begin
+  if Label10.Color = clBtnFace then
+    Label10.Color := clWhite
+  else
+    Label10.Color := clBtnFace;
+end;
+
+procedure TForm1.Label11Click(Sender: TObject);
+begin
+  if Label11.Color = clBtnFace then
+    Label11.Color := clWhite
+  else
+    Label11.Color := clBtnFace;
+end;
+
+procedure TForm1.Label12Click(Sender: TObject);
+begin
+  if Label12.Color = clBtnFace then
+    Label12.Color := clWhite
+  else
+    Label12.Color := clBtnFace;
+end;
+
+procedure TForm1.Label13Click(Sender: TObject);
+begin
+  if Label13.Color = clBtnFace then
+    Label13.Color := clWhite
+  else
+    Label13.Color := clBtnFace;
+end;
+
+procedure TForm1.Label14Click(Sender: TObject);
+begin
+  if Label14.Color = clBtnFace then
+    Label14.Color := clWhite
+  else
+    Label14.Color := clBtnFace;
+end;
+
+procedure TForm1.Label15Click(Sender: TObject);
+begin
+  if Label15.Color = clBtnFace then
+    Label15.Color := clWhite
+  else
+    Label15.Color := clBtnFace;
+end;
+
+procedure TForm1.Label16Click(Sender: TObject);
+begin
+  if Label16.Color = clBtnFace then
+    Label16.Color := clWhite
+  else
+    Label16.Color := clBtnFace;
+end;
+
+procedure TForm1.Label17Click(Sender: TObject);
+begin
+  if Label17.Color = clBtnFace then
+    Label17.Color := clWhite
+  else
+    Label17.Color := clBtnFace;
+end;
+
+procedure TForm1.SpinEdit5Change(Sender: TObject);
+begin
+  if CopySpinEdit.Value > CopySpinEdit.MaxValue then
+    CopySpinEdit.Value := 0;
+  CopySpinEdit.MaxValue := SpinEdit5.Value;
+  SpinEdit1.MaxValue := SpinEdit5.Value;
+  if SpinEdit1.Value > SpinEdit1.MaxValue then
+    SpinEdit1.Value := SpinEdit1.MaxValue;
+end;
+
+end.

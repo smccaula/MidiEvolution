@@ -22,7 +22,7 @@ $RECYCLE.BIN/
 *.wav
 
 # Visual Studio files
-*.cache
+*.CACHE
 
 # Windows shortcuts
 *.lnk

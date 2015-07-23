@@ -2,3 +2,7 @@ C:\Users\smccaula\Documents\GitHub\MidiEvolution\as_midi\bin\Debug\as_midi.exe
 C:\Users\smccaula\Documents\GitHub\MidiEvolution\as_midi\bin\Debug\as_midi.pdb
 C:\Users\smccaula\Documents\GitHub\MidiEvolution\as_midi\obj\x86\Debug\as_midi.exe
 C:\Users\smccaula\Documents\GitHub\MidiEvolution\as_midi\obj\x86\Debug\as_midi.pdb
+U:\git\MidiEvolution\as_midi\obj\x86\Debug\as_midi.pdb
+U:\git\MidiEvolution\as_midi\bin\Debug\as_midi.exe
+U:\git\MidiEvolution\as_midi\bin\Debug\as_midi.pdb
+U:\git\MidiEvolution\as_midi\obj\x86\Debug\as_midi.exe

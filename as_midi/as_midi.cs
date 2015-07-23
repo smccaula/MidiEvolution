@@ -21,8 +21,8 @@ namespace as_midi
 
         public static class GlobalVar
         {
-            public static int framesThisRun = 120000;
-            public static int featureCount = (4 * framesThisRun);
+            public static int framesThisRun = 1000 * 16 * 1;
+            public static int featureCount = (5 * framesThisRun);
             public static int[] features = new int[350000];
             public static string arg0 = "";
             public static long[] leftmono = new long[maxSamples];
@@ -84,12 +84,15 @@ namespace as_midi
 
         static void Main(string[] args)
         {
-
-            string XMLfile = "test0995.xml";
+            Console.WriteLine("1");
+            System.Threading.Thread.Sleep(5000);
+            string XMLfile = "test78.xml";
             openWav("target.wav"); 
             int nextApply = -1;
             bool someLeft = true;
             Random random = new Random();
+            Console.WriteLine("2");
+            System.Threading.Thread.Sleep(5000);
 
             for (int tx = 0; tx < 64; tx++)
                 GlobalVar.noMore[tx] = false;
@@ -104,6 +107,8 @@ namespace as_midi
             {
                 return;
             }
+            Console.WriteLine("3");
+            System.Threading.Thread.Sleep(5000);
 
             bool openXML = false;
             int XMLTry = 0;
@@ -126,19 +131,23 @@ namespace as_midi
                 }
             }
 
+            Console.WriteLine("4");
+            System.Threading.Thread.Sleep(5000);
 
-            if (!GetExistingCharacteristics(GlobalVar.popMember)) 
-            {
+      //      if (!GetExistingCharacteristics(GlobalVar.popMember)) 
+      //      {
                 //    Console.WriteLine("input error");
-                ExportXMLfile(XMLfile);
-                return;
-            }
+      //          ExportXMLfile(XMLfile);
+      //          return;
+      //      }
 
             for (int frameX = 0; frameX < GlobalVar.framesThisRun; frameX++)
             {
                 GlobalVar.frameActive[frameX] = false;
             }
 
+            Console.WriteLine("5");
+            System.Threading.Thread.Sleep(5000);
 
             for (int i = 0; i < GlobalVar.samples; i++)
             {
@@ -146,6 +155,8 @@ namespace as_midi
                 GlobalVar.potentialDiff = GlobalVar.potentialDiff + GlobalVar.sampleDiff[i];  // worst is mirror
             }
 
+            Console.WriteLine("6");
+            System.Threading.Thread.Sleep(5000);
 
             //at this point we have the target wav file, and the XML of our MIDI file
 
@@ -257,6 +268,50 @@ namespace as_midi
             // need to sort all events based on time (any event can have any time)
             // New routine to write header and all events into tracks
             // Have a valid MIDI file by the end of this
+
+            // open output midi file
+
+            byte[] buildMIDI = new byte[GlobalVar.featureCount];
+            int buildNDX = 0;
+
+            byte[] MThd = new byte["MThd".Length * sizeof(char)];
+            System.Buffer.BlockCopy("MThd".ToCharArray(), 0, MThd, 0, MThd.Length);
+            System.Buffer.BlockCopy(MThd, 0, buildMIDI, 0, MThd.Length);
+            buildNDX += MThd.Length;
+
+            buildMIDI[buildNDX] = 0;buildNDX++;
+            buildMIDI[buildNDX] = 0; buildNDX++;
+            buildMIDI[buildNDX] = 0; buildNDX++;
+            buildMIDI[buildNDX] = 6; buildNDX++;
+
+            buildMIDI[buildNDX] = 0; buildNDX++;
+            buildMIDI[buildNDX] = 0; buildNDX++;
+
+            buildMIDI[buildNDX] = 0; buildNDX++;
+            buildMIDI[buildNDX] = 1; buildNDX++;
+
+            buildMIDI[buildNDX] = (256-25); buildNDX++;
+            buildMIDI[buildNDX] = 40; buildNDX++;
+
+            byte[] midiValues = new byte[buildNDX];
+
+            Array.Copy(buildMIDI, midiValues, buildNDX);
+
+            string fn = Convert.ToString(GlobalVar.popMember) + ".midi";
+
+            if (File.Exists(fn))
+            {
+                File.Delete(fn);
+            }
+
+            File.WriteAllBytes(fn, midiValues);
+
+            // write midi header
+
+            // loop through features - write an event if valid
+
+            // close file
+
         }
 
         static void RenderMIDIToWav()
@@ -800,8 +855,8 @@ namespace as_midi
 
             // here can set frame size etc.
 
-            GlobalVar.framesThisRun = Convert.ToInt16(GlobalVar.samples / sineInterval) + 1;
-            GlobalVar.featureCount = (4 * GlobalVar.framesThisRun);
+            GlobalVar.framesThisRun = 1000 * 16 * 1;
+            GlobalVar.featureCount = (5 * GlobalVar.framesThisRun);
 
             GlobalVar.leftmono = new long[GlobalVar.samples];
 
