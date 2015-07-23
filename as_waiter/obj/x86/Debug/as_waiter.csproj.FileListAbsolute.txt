@@ -22,3 +22,6 @@ U:\git\MidiEvolution\as_waiter\obj\x86\Debug\as_waiter.exe
 U:\git\MidiEvolution\as_waiter\obj\x86\Debug\as_waiter.pdb
 C:\Users\smccaula\Documents\GitHub\MidiEvolution\as_waiter\obj\x86\Debug\as_waiter.exe
 C:\Users\smccaula\Documents\GitHub\MidiEvolution\as_waiter\obj\x86\Debug\as_waiter.pdb
+C:\Users\smccaula\Documents\GitHub\MidiEvolution\bin\as_waiter.exe
+C:\Users\smccaula\Documents\GitHub\MidiEvolution\bin\as_waiter.pdb
+C:\Users\smccaula\Documents\GitHub\MidiEvolution\as_waiter\obj\x86\Debug\as_waiter.csprojResolveAssemblyReference.cache

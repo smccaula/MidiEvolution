@@ -20,3 +20,7 @@ U:\git\MidiEvolution\as_clear\obj\x86\Debug\as_clear.exe
 U:\git\MidiEvolution\as_clear\obj\x86\Debug\as_clear.pdb
 U:\git\MidiEvolution\bin\as_clear.exe
 U:\git\MidiEvolution\bin\as_clear.pdb
+C:\Users\smccaula\Documents\GitHub\MidiEvolution\bin\as_clear.exe
+C:\Users\smccaula\Documents\GitHub\MidiEvolution\bin\as_clear.pdb
+C:\Users\smccaula\Documents\GitHub\MidiEvolution\as_clear\obj\x86\Debug\as_clear.exe
+C:\Users\smccaula\Documents\GitHub\MidiEvolution\as_clear\obj\x86\Debug\as_clear.pdb

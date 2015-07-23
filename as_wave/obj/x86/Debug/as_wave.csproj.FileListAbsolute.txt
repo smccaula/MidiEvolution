@@ -16,3 +16,5 @@ U:\git\MidiEvolution\bin\as_wave.exe
 U:\git\MidiEvolution\bin\as_wave.pdb
 C:\Users\smccaula\Documents\GitHub\MidiEvolution\as_wave\obj\x86\Debug\as_wave.exe
 C:\Users\smccaula\Documents\GitHub\MidiEvolution\as_wave\obj\x86\Debug\as_wave.pdb
+C:\Users\smccaula\Documents\GitHub\MidiEvolution\bin\as_wave.exe
+C:\Users\smccaula\Documents\GitHub\MidiEvolution\bin\as_wave.pdb

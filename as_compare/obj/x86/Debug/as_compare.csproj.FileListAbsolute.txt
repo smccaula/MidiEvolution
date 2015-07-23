@@ -10,3 +10,7 @@ U:\git\MidiEvolution\as_compare\obj\x86\Debug\as_compare.exe
 U:\git\MidiEvolution\as_compare\obj\x86\Debug\as_compare.pdb
 U:\git\MidiEvolution\as_compare\bin\Debug\as_compare.exe
 U:\git\MidiEvolution\as_compare\bin\Debug\as_compare.pdb
+C:\Users\smccaula\Documents\GitHub\MidiEvolution\as_compare\bin\Debug\as_compare.exe
+C:\Users\smccaula\Documents\GitHub\MidiEvolution\as_compare\bin\Debug\as_compare.pdb
+C:\Users\smccaula\Documents\GitHub\MidiEvolution\as_compare\obj\x86\Debug\as_compare.exe
+C:\Users\smccaula\Documents\GitHub\MidiEvolution\as_compare\obj\x86\Debug\as_compare.pdb

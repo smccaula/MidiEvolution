@@ -7,6 +7,9 @@ using System.IO;
 using System.Xml;
 using System.Collections;
 
+using System.Diagnostics;
+using System.ComponentModel;
+
 namespace as_midi
 {
     class as_midi
@@ -148,7 +151,13 @@ namespace as_midi
 
             BuildMIDIFile();
 
+            // build parameters
+            // call external program
             RenderMIDIToWav();
+
+
+
+
 
             // at this point I have both wav files, and the rest of the process should be identical
 
@@ -256,6 +265,21 @@ namespace as_midi
             // import new WAV file into
             // can rewrite openWav() to read either target or new 
             // can write this part first and used a pre-created MIDI file
+
+            Process midiProcess = new Process();
+            String midiFile = Convert.ToString(GlobalVar.popMember) + ".midi";
+            String wavFile = Convert.ToString(GlobalVar.popMember) + ".wav";
+
+            midiProcess = new Process();
+
+            midiProcess.StartInfo.CreateNoWindow = true;
+            midiProcess.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+
+            midiProcess.StartInfo.FileName = "fluidsynth.exe";
+            midiProcess.StartInfo.Arguments = " " + midiFile + " " + wavFile;
+            midiProcess.Start();
+            midiProcess.WaitForExit();
+            midiProcess.Dispose();
         }
 
         static int GetWeights()
@@ -710,47 +734,20 @@ namespace as_midi
     //        public static int[] MIDIdata1 = new int[framesThisRun];
     //        public static int[] MIDIdata2 = new int[framesThisRun];
 
-                GlobalVar.levelOffset[i] = 0;
+   //             GlobalVar.levelOffset[i] = 0;
 
-                GlobalVar.levelFrequency[i] = GlobalVar.features[(i * waveSize)] + (256 * GlobalVar.features[1 + (i * waveSize)]);
+   //             GlobalVar.levelFrequency[i] = GlobalVar.features[(i * waveSize)] + (256 * GlobalVar.features[1 + (i * waveSize)]);
 
-                if (GlobalVar.levelFrequency[i] >= (256 * 128))
-                {
-                    GlobalVar.levelOffset[i] = GlobalVar.levelOffset[i] + 1;
-                    GlobalVar.levelFrequency[i] = GlobalVar.levelFrequency[i] - (256 * 128);
-                }
-                if (GlobalVar.levelFrequency[i] >= (256 * 64))
-                {
-                    GlobalVar.levelOffset[i] = GlobalVar.levelOffset[i] + 2;
-                    GlobalVar.levelFrequency[i] = GlobalVar.levelFrequency[i] - (256 * 64);
-                }
-                if (GlobalVar.levelFrequency[i] >= (256 * 32))
-                {
-                    GlobalVar.levelOffset[i] = GlobalVar.levelOffset[i] + 4;
-                    GlobalVar.levelFrequency[i] = GlobalVar.levelFrequency[i] - (256 * 32);
-                }
-                if (GlobalVar.levelFrequency[i] >= (256 * 16))
-                {
-                    GlobalVar.levelOffset[i] = GlobalVar.levelOffset[i] + 8;
-                    GlobalVar.levelFrequency[i] = GlobalVar.levelFrequency[i] - (256 * 16);
-                }
-
-                GlobalVar.levelAmplitude[i] = GlobalVar.features[2 + (i * waveSize)] + (256 * GlobalVar.features[3 + (i * waveSize)]);
-                GlobalVar.levelDirection[i] = -1;
-                if (GlobalVar.levelAmplitude[i] >= (256 * 128))
-                {
-                    GlobalVar.levelDirection[i] = 1;
-                    GlobalVar.levelAmplitude[i] = GlobalVar.levelAmplitude[i] - (256 * 128);
-                }
-
-
-                if (GlobalVar.levelAmplitude[i] >= (256 * 64))
-                {
-                    GlobalVar.levelOffset[i] = GlobalVar.levelOffset[i] + 16;
-                    GlobalVar.levelAmplitude[i] = GlobalVar.levelAmplitude[i] - (256 * 64);
-                }
-
-                GlobalVar.levelFD[i] = GlobalVar.freqLookup[GlobalVar.levelFrequency[i]];
+   //             if (GlobalVar.levelFrequency[i] >= (256 * 128))
+   //             {
+   //                 GlobalVar.levelOffset[i] = GlobalVar.levelOffset[i] + 1;
+   //                 GlobalVar.levelFrequency[i] = GlobalVar.levelFrequency[i] - (256 * 128);
+   //             }
+   //             if (GlobalVar.levelFrequency[i] >= (256 * 64))
+   //             {
+   //                 GlobalVar.levelOffset[i] = GlobalVar.levelOffset[i] + 2;
+   //                 GlobalVar.levelFrequency[i] = GlobalVar.levelFrequency[i] - (256 * 64);
+   //             }
 
             }
         }
