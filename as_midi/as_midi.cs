@@ -21,8 +21,8 @@ namespace as_midi
 
         public static class GlobalVar
         {
-            public static int framesThisRun = 1000 * 16 * 1;
-            public static int featureCount = (5 * framesThisRun);
+            public static int eventsThisRun = 1000 * 16 * 1;
+            public static int featureCount = (5 * eventsThisRun);
             public static int[] features = new int[350000];
             public static string arg0 = "";
             public static long[] leftmono = new long[maxSamples];
@@ -32,24 +32,27 @@ namespace as_midi
             public static long[] calcWave = new long[maxSamples];
             public static long[] diffWave = new long[maxSamples];
 
-            public static int[] MIDIdelta = new int[framesThisRun];
-            public static int[] MIDItype = new int[framesThisRun];
-            public static int[] MIDIchannel = new int[framesThisRun];
-            public static int[] MIDIdata1 = new int[framesThisRun];
-            public static int[] MIDIdata2 = new int[framesThisRun];
+            public static int[] MIDIdelta = new int[eventsThisRun];
+            public static int[] MIDItype = new int[eventsThisRun];
+            public static int[] MIDIchannel = new int[eventsThisRun];
+            public static int[] MIDIdata1 = new int[eventsThisRun];
+            public static int[] MIDIdata2 = new int[eventsThisRun];
+            public static bool[] MIDIvalid = new bool[eventsThisRun];
+            public static bool[] MIDIwritten = new bool[eventsThisRun];
 
-            public static int[] levelOffset = new int[framesThisRun];
-            public static int[] levelFrequency = new int[framesThisRun];
-            public static double[] levelFD = new double[framesThisRun];
-            public static int[] levelAmplitude = new int[framesThisRun];
-            public static int[] levelDirection = new int[framesThisRun];
-            public static int[] frameFirstSample = new int[framesThisRun];
-            public static int[] frameLastSample = new int[framesThisRun];
-            public static long[] frameScore = new long[framesThisRun];
-            public static bool[] frameActive = new bool[framesThisRun];
+
+            public static int[] levelOffset = new int[eventsThisRun];
+            public static int[] levelFrequency = new int[eventsThisRun];
+            public static double[] levelFD = new double[eventsThisRun];
+            public static int[] levelAmplitude = new int[eventsThisRun];
+            public static int[] levelDirection = new int[eventsThisRun];
+            public static int[] frameFirstSample = new int[eventsThisRun];
+            public static int[] frameLastSample = new int[eventsThisRun];
+            public static long[] frameScore = new long[eventsThisRun];
+            public static bool[] frameActive = new bool[eventsThisRun];
             public static double[] freqLookup = new double[256 * 16];
             public static long[] sampleDiff = new long[maxSamples];
-            public static int[,] frameSamples = new int[framesThisRun, 410];
+            public static int[,] frameSamples = new int[eventsThisRun, 410];
             public static bool[] noMore = new bool[64];
 
             public static int myGeneration = 0;
@@ -141,7 +144,7 @@ namespace as_midi
       //          return;
       //      }
 
-            for (int frameX = 0; frameX < GlobalVar.framesThisRun; frameX++)
+            for (int frameX = 0; frameX < GlobalVar.eventsThisRun; frameX++)
             {
                 GlobalVar.frameActive[frameX] = false;
             }
@@ -166,61 +169,7 @@ namespace as_midi
             // call external program
             RenderMIDIToWav();
 
-
-
-
-
             // at this point I have both wav files, and the rest of the process should be identical
-
-
-            someLeft = true;
-            int loopCTR = 0;
-            int consecutiveEmpty = 0;
-            while (someLeft)
-            {
-                nextApply = -1;
-                if (!GlobalVar.noMore[(GlobalVar.startFrame / (GlobalVar.framesThisRun / 32))])
-                {
-                    nextApply = GetWeights();
-                }
-
-                if (GlobalVar.noMore[(GlobalVar.startFrame / (GlobalVar.framesThisRun / 32))])
-                {
-                    GlobalVar.startFrame = GlobalVar.startFrame + (GlobalVar.framesThisRun / 32);
-                    int endFrame = GlobalVar.startFrame + (GlobalVar.framesThisRun / 16);
-                    if ((GlobalVar.framesThisRun - endFrame) < (GlobalVar.framesThisRun / 16))
-                    {
-                        GlobalVar.startFrame = 0;
-                    }
-                }
-
-                if (nextApply > -1)
-                    consecutiveEmpty = 0;
-                if (nextApply < 0)
-                {
-                    consecutiveEmpty++;
-                    GlobalVar.noMore[(GlobalVar.startFrame / (GlobalVar.framesThisRun / 32))] = true;
-                }
-                if (consecutiveEmpty > 32)
-                    someLeft = false;
-                loopCTR++;
-            }
-
-            someLeft = true;
-            while (someLeft)
-            {
-                nextApply = GetWeights();
-
-                if (nextApply > -1)
-                    consecutiveEmpty = 0;
-                if (nextApply < 0)
-                {
-                    consecutiveEmpty++;
-                }
-                if (consecutiveEmpty > 32)
-                    someLeft = false;
-            }
-
 
             GlobalVar.myScore = GlobalVar.potentialDiff - AlternateScore(0, GlobalVar.samples);
             //       Console.WriteLine("score " + GlobalVar.myScore.ToString());
@@ -271,6 +220,12 @@ namespace as_midi
 
             // open output midi file
 
+            for (int eventX = 0; eventX < GlobalVar.eventsThisRun; eventX++)
+            {
+                GlobalVar.MIDIvalid[eventX] = true;
+                GlobalVar.MIDIwritten[eventX] = false;
+            }
+
             byte[] buildMIDI = new byte[GlobalVar.featureCount];
             int buildNDX = 0;
 
@@ -292,6 +247,37 @@ namespace as_midi
 
             buildMIDI[buildNDX] = (256-25); buildNDX++;
             buildMIDI[buildNDX] = 40; buildNDX++;
+
+            bool noMoreEvents = false;
+
+
+            while (noMoreEvents) 
+            {
+                int nextDelta = 256 * 256;
+                int nextEvent = -1;
+                for (int eventX = 0; eventX < GlobalVar.eventsThisRun; eventX++)
+                {
+                    if ((GlobalVar.MIDIdelta[eventX] < nextDelta) && (GlobalVar.MIDIvalid[eventX]) && (!GlobalVar.MIDIwritten[eventX]))
+                    {
+                        nextEvent = eventX;
+                        nextDelta = GlobalVar.MIDIdelta[eventX];
+                    }
+                }
+                if (nextEvent > -1)
+                {
+                    GlobalVar.MIDIwritten[nextEvent] = true;
+                    while (GlobalVar.MIDIdelta[nextEvent] > 127)
+                    {
+                        buildMIDI[buildNDX] = 0; buildNDX++;
+
+                    }
+                    buildMIDI[buildNDX] = 0; buildNDX++;
+                }
+                else
+                {
+                    noMoreEvents = true;
+                }
+            }
 
             byte[] midiValues = new byte[buildNDX];
 
@@ -316,14 +302,15 @@ namespace as_midi
 
         static void RenderMIDIToWav()
         {
-            // call Fluidity passing new MIDI file
-            // import new WAV file into
-            // can rewrite openWav() to read either target or new 
-            // can write this part first and used a pre-created MIDI file
 
             Process midiProcess = new Process();
             String midiFile = Convert.ToString(GlobalVar.popMember) + ".midi";
             String wavFile = Convert.ToString(GlobalVar.popMember) + ".wav";
+
+            // call Fluidity passing new MIDI file
+            // import new WAV file into
+            // can rewrite openWav() to read either target or new 
+            // can write this part first and used a pre-created MIDI file
 
             midiProcess = new Process();
 
@@ -337,97 +324,6 @@ namespace as_midi
             midiProcess.Dispose();
         }
 
-        static int GetWeights()
-        {
-            int weightNDX = -1;
-            long weightValue = 0;
-            long oldScore = 0;
-            long newScore = 0;
-            long[] newCalc = new long[maxSamples];
-            bool broken = false;
-            int sNDX = 0;
-            int startFrame = 0;
-            int endFrame = GlobalVar.framesThisRun;
-            Random random = new Random();
-
-            startFrame = GlobalVar.startFrame;
-            GlobalVar.startFrame = GlobalVar.startFrame + (GlobalVar.framesThisRun / 32);
-            endFrame = startFrame + (GlobalVar.framesThisRun / 16);
-            if ((GlobalVar.framesThisRun - endFrame) < (GlobalVar.framesThisRun / 16))
-            {
-                endFrame = GlobalVar.framesThisRun;
-                GlobalVar.startFrame = 0;
-            }
-
-            for (int frameX = startFrame; frameX < endFrame; frameX++)
-            {
-                if (!GlobalVar.frameActive[frameX])
-                {
-                    oldScore = 0;
-                    newScore = 0;
-                    broken = false;
-                    for (int wx = GlobalVar.frameFirstSample[frameX]; wx < GlobalVar.frameLastSample[frameX]; wx++)
-                    {
-                        oldScore = oldScore + (Math.Abs(GlobalVar.leftmono[wx] - GlobalVar.calcWave[wx]));
-
-                        sNDX = wx - GlobalVar.frameFirstSample[frameX];
-                        try
-                        {
-                            newCalc[wx] = GlobalVar.calcWave[wx] + GlobalVar.frameSamples[frameX, sNDX];
-                        }
-                        catch
-                        {
-                            broken = true;
-                            if (GlobalVar.calcWave[wx] > -1)
-                                newCalc[wx] = ((128 * 256) - 1);
-
-                            if (GlobalVar.calcWave[wx] < 0)
-                                newCalc[wx] = -(128 * 256) + 1;
-                        }
-                        newScore = newScore + (Math.Abs(GlobalVar.leftmono[wx] - newCalc[wx]));
-                    }
-                    GlobalVar.frameScore[frameX] = oldScore - newScore;
-                    if ((oldScore - newScore) < GlobalVar.worstScore)
-                    {
-                        GlobalVar.worstScore = (oldScore - newScore);
-                        GlobalVar.worstNDX = frameX;
-                    }
-                    if (((oldScore - newScore) > weightValue) && (!broken))
-                    {
-                        weightNDX = frameX;
-                        weightValue = oldScore - newScore;
-                    }
-                }
-            }
-
-            if (weightNDX > -1)
-            {
-                for (int wx = GlobalVar.frameFirstSample[weightNDX]; wx < GlobalVar.frameLastSample[weightNDX]; wx++)
-                {
-                    sNDX = wx - GlobalVar.frameFirstSample[weightNDX];
-                    try
-                    {
-                        GlobalVar.calcWave[wx] = GlobalVar.calcWave[wx] + GlobalVar.frameSamples[weightNDX, sNDX];
-                    }
-                    catch
-                    {
-                        broken = true;
-                        if (GlobalVar.calcWave[wx] > -1)
-                            GlobalVar.calcWave[wx] = ((128 * 256) - 1);
-
-                        if (GlobalVar.calcWave[wx] < 0)
-                            GlobalVar.calcWave[wx] = -(128 * 256) + 1;
-                    }
-                }
-
-                GlobalVar.frameActive[weightNDX] = true;
-                GlobalVar.activeFeatures++;
-                GlobalVar.lastLength = GlobalVar.frameLastSample[weightNDX] - GlobalVar.frameFirstSample[weightNDX];
-            }
-
-            return (weightNDX);
-        }
-
         static long AlternateScore(int startX, int endX)
         {
             long runningScore = 0;
@@ -436,7 +332,6 @@ namespace as_midi
             {
                 runningScore = runningScore + (Math.Abs(GlobalVar.leftmono[i] - GlobalVar.calcWave[i]));
             }
-
             return (runningScore);
         }
 
@@ -456,8 +351,6 @@ namespace as_midi
 
                 while (i < (GlobalVar.samples))
                 {
-
-
                     GlobalVar.diffWave[i] = GlobalVar.leftmono[i] - GlobalVar.calcWave[i];
 
                     if (GlobalVar.diffWave[i] < 0)
@@ -521,7 +414,7 @@ namespace as_midi
                 {
                     string line = "frame, active, freq, amp, phase, direction, weight";
                     file.WriteLine(line);
-                    for (int frameX = 0; frameX < GlobalVar.framesThisRun; frameX++)
+                    for (int frameX = 0; frameX < GlobalVar.eventsThisRun; frameX++)
                     {
                         if (GlobalVar.frameActive[frameX])
                         {
@@ -535,9 +428,7 @@ namespace as_midi
                         }
                     }
                 }
-
             }
-
         }
 
         static void WriteScoreFile()
@@ -545,7 +436,7 @@ namespace as_midi
             string fn = "sx" + Convert.ToString(GlobalVar.popMember);
             BinaryWriter scoreFile = new BinaryWriter(File.Open(fn, FileMode.Create));
 
-            for (int fx = 0; fx < GlobalVar.framesThisRun; fx++)
+            for (int fx = 0; fx < GlobalVar.eventsThisRun; fx++)
             {
                 scoreFile.Write(Convert.ToInt32(GlobalVar.frameScore[fx]));
             }
@@ -640,7 +531,7 @@ namespace as_midi
                     xml.WriteElementString("samples", GlobalVar.samples.ToString());
                     xml.WriteWhitespace("\n  ");
 
-                    xml.WriteElementString("frames", GlobalVar.framesThisRun.ToString());
+                    xml.WriteElementString("frames", GlobalVar.eventsThisRun.ToString());
                     xml.WriteWhitespace("\n  ");
 
                     xml.WriteElementString("features", GlobalVar.featureCount.ToString());
@@ -774,10 +665,11 @@ namespace as_midi
         {
             int MIDISize = 5;
 
-            for (int i = 0; i < GlobalVar.framesThisRun; i++)
+            for (int i = 0; i < GlobalVar.eventsThisRun; i++)
             {
 
-                GlobalVar.MIDIdelta[i] = GlobalVar.features[(i * MIDISize)];
+                GlobalVar.MIDIdelta[i] = GlobalVar.features[(i * MIDISize)] + (256 * GlobalVar.features[1 + (i * MIDISize)]);
+
                 GlobalVar.MIDItype[i] = GlobalVar.features[1 + (i * MIDISize)];
                 if (GlobalVar.MIDItype[i] >= (256 * 128))
                 {
@@ -785,9 +677,16 @@ namespace as_midi
                     GlobalVar.levelFrequency[i] = GlobalVar.levelFrequency[i] - (256 * 128);
                 }
 
-    //        public static int[] MIDItype = new int[framesThisRun];
-    //        public static int[] MIDIdata1 = new int[framesThisRun];
-    //        public static int[] MIDIdata2 = new int[framesThisRun];
+    //        public static int[] MIDItype = new int[eventsThisRun];
+    //        public static int[] MIDIdata1 = new int[eventsThisRun];
+    //        public static int[] MIDIdata2 = new int[eventsThisRun];
+//            public static int[] MIDItype = new int[eventsThisRun];
+//            public static int[] MIDIchannel = new int[eventsThisRun];
+//            public static int[] MIDIdata1 = new int[eventsThisRun];
+//            public static int[] MIDIdata2 = new int[eventsThisRun];
+//            public static bool[] MIDIvalid = new bool[eventsThisRun];
+//            public static bool[] MIDIwritten = new bool[eventsThisRun];
+
 
    //             GlobalVar.levelOffset[i] = 0;
 
@@ -855,8 +754,8 @@ namespace as_midi
 
             // here can set frame size etc.
 
-            GlobalVar.framesThisRun = 1000 * 16 * 1;
-            GlobalVar.featureCount = (5 * GlobalVar.framesThisRun);
+            GlobalVar.eventsThisRun = 1000 * 16 * 1;
+            GlobalVar.featureCount = (5 * GlobalVar.eventsThisRun);
 
             GlobalVar.leftmono = new long[GlobalVar.samples];
 
