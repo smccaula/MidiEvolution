@@ -14,12 +14,14 @@ namespace as_midi
 {
     class as_midi
     {
-        const int maxSamples = 11025 * 30; // 30 seconds max
+        const double samplesSecond = 44100.0;
+        const int maxSamples = 44100 * 30; // 30 seconds max
 
         public static class GlobalVar
         {
+            public static int endTime = 0;
             public static int eventsThisRun = 1000 * 16 * 1;
-            public static int featureCount = (5 * eventsThisRun);
+            public static int featureCount = (7 * eventsThisRun);
             public static int[] features = new int[350000];
             public static string arg0 = "";
             public static long[] leftmono = new long[maxSamples];
@@ -29,13 +31,12 @@ namespace as_midi
             public static long[] calcWave = new long[maxSamples];
             public static long[] diffWave = new long[maxSamples];
 
-            public static int[] MIDIdelta = new int[eventsThisRun];
-            public static int[] MIDIduration = new int[eventsThisRun];
-            public static int[] MIDItypechannel = new int[eventsThisRun];
-            public static int[] MIDIdata1 = new int[eventsThisRun];
-            public static int[] MIDIdata2 = new int[eventsThisRun];
-            public static bool[] MIDIvalid = new bool[eventsThisRun];
-            public static bool[] MIDIwritten = new bool[eventsThisRun];
+            public static int[] MIDIdelta = new int[eventsThisRun*2];
+            public static int[] MIDItypechannel = new int[eventsThisRun*2];
+            public static int[] MIDIdata1 = new int[eventsThisRun*2];
+            public static int[] MIDIdata2 = new int[eventsThisRun*2];
+            public static bool[] MIDIvalid = new bool[eventsThisRun*2];
+            public static bool[] MIDIwritten = new bool[eventsThisRun*2];
 
             public static long[] frameScore = new long[eventsThisRun];
             public static long[] sampleDiff = new long[maxSamples];
@@ -73,6 +74,7 @@ namespace as_midi
         static void Main(string[] args)
         {
             string XMLfile = "test78.xml";
+            openWav("target.wav");
             Random random = new Random();
 
             if (args.Length > 0)
@@ -213,7 +215,18 @@ namespace as_midi
             buildMIDI[buildNDX] = 40; buildNDX++;
 
             // write MIDI track header
+            byte[] MTrk = new byte["MTrk".Length * sizeof(char)];
+            System.Buffer.BlockCopy("MTrk".ToCharArray(), 0, MTrk, 0, MThd.Length);
+            System.Buffer.BlockCopy(MTrk, 0, buildMIDI, 0, MTrk.Length);
+            buildNDX += MTrk.Length;
 
+            // just holding space,track length will be entered when it is known
+            int MIDItrackLocation = buildNDX;
+            int MIDIeventCTR = 0;
+            buildMIDI[buildNDX] = 0; buildNDX++;
+            buildMIDI[buildNDX] = 0; buildNDX++;
+            buildMIDI[buildNDX] = 0; buildNDX++;
+            buildMIDI[buildNDX] = 0; buildNDX++;
 
             bool noMoreEvents = false;
 
@@ -232,6 +245,12 @@ namespace as_midi
                 }
                 if (nextEvent > -1)
                 {
+
+                    if (true)
+                    {
+
+                    }
+
                     GlobalVar.MIDIwritten[nextEvent] = true;
                     // write this event
                     // need to convert delta
@@ -613,7 +632,6 @@ namespace as_midi
             {
 
                 GlobalVar.MIDIdelta[i] = GlobalVar.features[(i * MIDISize)] + (256 * GlobalVar.features[1 + (i * MIDISize)]);
-                GlobalVar.MIDIduration[i] = GlobalVar.features[2 + (i * MIDISize)] + (256 * GlobalVar.features[3 + (i * MIDISize)]);
                 GlobalVar.MIDItypechannel[i] = GlobalVar.features[4 + (i * MIDISize)];
 
                 GlobalVar.MIDIdata1[i] = GlobalVar.features[5 + (i * MIDISize)];
@@ -623,11 +641,25 @@ namespace as_midi
                 GlobalVar.MIDIvalid[i] = false;
                 if ((GlobalVar.MIDItypechannel[i] <= (128 + 15)) && (GlobalVar.MIDItypechannel[i] >= (128 + 0)))
                 {
-                    GlobalVar.MIDIvalid[i] = true; // note on
+                    if (GlobalVar.MIDIdelta[i] < GlobalVar.endTime)
+                        GlobalVar.MIDIvalid[i] = true; // note on
+                    //create a note off at delta + duration
+                    GlobalVar.MIDIdelta[i + GlobalVar.eventsThisRun] = GlobalVar.MIDIdelta[i]  +
+                        GlobalVar.features[2 + (i * MIDISize)] + (256 * GlobalVar.features[3 + (i * MIDISize)]);
+
+                    if (GlobalVar.MIDIdelta[i] + GlobalVar.MIDIdelta[i + GlobalVar.eventsThisRun] > GlobalVar.endTime)
+                        GlobalVar.MIDIdelta[i + GlobalVar.eventsThisRun] = GlobalVar.endTime - GlobalVar.MIDIdelta[i]; 
+
+                    GlobalVar.MIDItypechannel[i + GlobalVar.eventsThisRun] = GlobalVar.features[4 + (i * MIDISize)] - 16;
+
+                    GlobalVar.MIDIdata1[i + GlobalVar.eventsThisRun] = GlobalVar.features[5 + (i * MIDISize)];
+                    GlobalVar.MIDIdata2[i + GlobalVar.eventsThisRun] = GlobalVar.features[6 + (i * MIDISize)];
+
+                    GlobalVar.MIDIvalid[i + GlobalVar.eventsThisRun] = GlobalVar.MIDIvalid[i];
                 }
                 if ((GlobalVar.MIDItypechannel[i] <= (160 + 15)) && (GlobalVar.MIDItypechannel[i] >= (160 + 0)))
                 {
-                    GlobalVar.MIDIvalid[i] = true; // control change
+                    GlobalVar.MIDIvalid[i] = true; // key pressure
                 }
                 if ((GlobalVar.MIDItypechannel[i] <= (176 + 15)) && (GlobalVar.MIDItypechannel[i] >= (176 + 0)))
                 {
@@ -690,7 +722,7 @@ namespace as_midi
 
             // Pos is now positioned to start of actual sound data.
             GlobalVar.samples = (wavSize) / 2;     // more accurate, get actual chunk size
-
+            GlobalVar.endTime = Convert.ToInt32((GlobalVar.samples / samplesSecond) * 1000);
             // here can set frame size etc.
 
             GlobalVar.eventsThisRun = 1000 * 16 * 1;
