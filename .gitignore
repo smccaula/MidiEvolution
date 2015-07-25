@@ -24,6 +24,8 @@ $RECYCLE.BIN/
 # Visual Studio files
 *.CACHE
 *.cache
+*.pdb
+*.sou
 
 # Windows shortcuts
 *.lnk

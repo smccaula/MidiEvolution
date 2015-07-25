@@ -14,9 +14,6 @@ namespace as_midi
 {
     class as_midi
     {
-        const double TAU = 2 * Math.PI;
-        const double samplesSecond = 11025.0;
-        const double sineInterval = 1;
         const int maxSamples = 11025 * 30; // 30 seconds max
 
         public static class GlobalVar
@@ -33,27 +30,15 @@ namespace as_midi
             public static long[] diffWave = new long[maxSamples];
 
             public static int[] MIDIdelta = new int[eventsThisRun];
-            public static int[] MIDItype = new int[eventsThisRun];
-            public static int[] MIDIchannel = new int[eventsThisRun];
+            public static int[] MIDIduration = new int[eventsThisRun];
+            public static int[] MIDItypechannel = new int[eventsThisRun];
             public static int[] MIDIdata1 = new int[eventsThisRun];
             public static int[] MIDIdata2 = new int[eventsThisRun];
             public static bool[] MIDIvalid = new bool[eventsThisRun];
             public static bool[] MIDIwritten = new bool[eventsThisRun];
 
-
-            public static int[] levelOffset = new int[eventsThisRun];
-            public static int[] levelFrequency = new int[eventsThisRun];
-            public static double[] levelFD = new double[eventsThisRun];
-            public static int[] levelAmplitude = new int[eventsThisRun];
-            public static int[] levelDirection = new int[eventsThisRun];
-            public static int[] frameFirstSample = new int[eventsThisRun];
-            public static int[] frameLastSample = new int[eventsThisRun];
             public static long[] frameScore = new long[eventsThisRun];
-            public static bool[] frameActive = new bool[eventsThisRun];
-            public static double[] freqLookup = new double[256 * 16];
             public static long[] sampleDiff = new long[maxSamples];
-            public static int[,] frameSamples = new int[eventsThisRun, 410];
-            public static bool[] noMore = new bool[64];
 
             public static int myGeneration = 0;
             public static long myScore = 0;
@@ -87,18 +72,8 @@ namespace as_midi
 
         static void Main(string[] args)
         {
-            Console.WriteLine("1");
-            System.Threading.Thread.Sleep(5000);
             string XMLfile = "test78.xml";
-            openWav("target.wav"); 
-            int nextApply = -1;
-            bool someLeft = true;
             Random random = new Random();
-            Console.WriteLine("2");
-            System.Threading.Thread.Sleep(5000);
-
-            for (int tx = 0; tx < 64; tx++)
-                GlobalVar.noMore[tx] = false;
 
             if (args.Length > 0)
             {
@@ -143,11 +118,6 @@ namespace as_midi
       //          ExportXMLfile(XMLfile);
       //          return;
       //      }
-
-            for (int frameX = 0; frameX < GlobalVar.eventsThisRun; frameX++)
-            {
-                GlobalVar.frameActive[frameX] = false;
-            }
 
             Console.WriteLine("5");
             System.Threading.Thread.Sleep(5000);
@@ -220,12 +190,6 @@ namespace as_midi
 
             // open output midi file
 
-            for (int eventX = 0; eventX < GlobalVar.eventsThisRun; eventX++)
-            {
-                GlobalVar.MIDIvalid[eventX] = true;
-                GlobalVar.MIDIwritten[eventX] = false;
-            }
-
             byte[] buildMIDI = new byte[GlobalVar.featureCount];
             int buildNDX = 0;
 
@@ -248,9 +212,12 @@ namespace as_midi
             buildMIDI[buildNDX] = (256-25); buildNDX++;
             buildMIDI[buildNDX] = 40; buildNDX++;
 
+            // write MIDI track header
+
+
             bool noMoreEvents = false;
 
-
+            //loop through events
             while (noMoreEvents) 
             {
                 int nextDelta = 256 * 256;
@@ -266,11 +233,8 @@ namespace as_midi
                 if (nextEvent > -1)
                 {
                     GlobalVar.MIDIwritten[nextEvent] = true;
-                    while (GlobalVar.MIDIdelta[nextEvent] > 127)
-                    {
-                        buildMIDI[buildNDX] = 0; buildNDX++;
-
-                    }
+                    // write this event
+                    // need to convert delta
                     buildMIDI[buildNDX] = 0; buildNDX++;
                 }
                 else
@@ -302,7 +266,6 @@ namespace as_midi
 
         static void RenderMIDIToWav()
         {
-
             Process midiProcess = new Process();
             String midiFile = Convert.ToString(GlobalVar.popMember) + ".midi";
             String wavFile = Convert.ToString(GlobalVar.popMember) + ".wav";
@@ -409,25 +372,6 @@ namespace as_midi
                 fn = "B" + GlobalVar.myScore.ToString() + ".xml";
                 ExportXMLfile(fn);
 
-                fn = "B" + GlobalVar.myScore.ToString() + ".csv";
-                using (System.IO.StreamWriter file = new System.IO.StreamWriter(fn))
-                {
-                    string line = "frame, active, freq, amp, phase, direction, weight";
-                    file.WriteLine(line);
-                    for (int frameX = 0; frameX < GlobalVar.eventsThisRun; frameX++)
-                    {
-                        if (GlobalVar.frameActive[frameX])
-                        {
-                            line = frameX.ToString() + ",";
-                            line = line + GlobalVar.frameActive[frameX].ToString() + ",";
-                            line = line + GlobalVar.levelFD[frameX].ToString() + ",";
-                            line = line + GlobalVar.levelAmplitude[frameX].ToString() + ",";
-                            line = line + GlobalVar.levelOffset[frameX].ToString() + ",";
-                            line = line + GlobalVar.levelDirection[frameX].ToString();
-                            file.WriteLine(line);
-                        }
-                    }
-                }
             }
         }
 
@@ -663,45 +607,40 @@ namespace as_midi
 
         static void AssignToParamaters()
         {
-            int MIDISize = 5;
+            int MIDISize = 7;
 
             for (int i = 0; i < GlobalVar.eventsThisRun; i++)
             {
 
                 GlobalVar.MIDIdelta[i] = GlobalVar.features[(i * MIDISize)] + (256 * GlobalVar.features[1 + (i * MIDISize)]);
+                GlobalVar.MIDIduration[i] = GlobalVar.features[2 + (i * MIDISize)] + (256 * GlobalVar.features[3 + (i * MIDISize)]);
+                GlobalVar.MIDItypechannel[i] = GlobalVar.features[4 + (i * MIDISize)];
 
-                GlobalVar.MIDItype[i] = GlobalVar.features[1 + (i * MIDISize)];
-                if (GlobalVar.MIDItype[i] >= (256 * 128))
+                GlobalVar.MIDIdata1[i] = GlobalVar.features[5 + (i * MIDISize)];
+                GlobalVar.MIDIdata2[i] = GlobalVar.features[6 + (i * MIDISize)];
+
+                GlobalVar.MIDIwritten[i] = false;
+                GlobalVar.MIDIvalid[i] = false;
+                if ((GlobalVar.MIDItypechannel[i] <= (128 + 15)) && (GlobalVar.MIDItypechannel[i] >= (128 + 0)))
                 {
-                    GlobalVar.levelOffset[i] = GlobalVar.levelOffset[i] + 1;
-                    GlobalVar.levelFrequency[i] = GlobalVar.levelFrequency[i] - (256 * 128);
+                    GlobalVar.MIDIvalid[i] = true; // note on
                 }
-
-    //        public static int[] MIDItype = new int[eventsThisRun];
-    //        public static int[] MIDIdata1 = new int[eventsThisRun];
-    //        public static int[] MIDIdata2 = new int[eventsThisRun];
-//            public static int[] MIDItype = new int[eventsThisRun];
-//            public static int[] MIDIchannel = new int[eventsThisRun];
-//            public static int[] MIDIdata1 = new int[eventsThisRun];
-//            public static int[] MIDIdata2 = new int[eventsThisRun];
-//            public static bool[] MIDIvalid = new bool[eventsThisRun];
-//            public static bool[] MIDIwritten = new bool[eventsThisRun];
-
-
-   //             GlobalVar.levelOffset[i] = 0;
-
-   //             GlobalVar.levelFrequency[i] = GlobalVar.features[(i * waveSize)] + (256 * GlobalVar.features[1 + (i * waveSize)]);
-
-   //             if (GlobalVar.levelFrequency[i] >= (256 * 128))
-   //             {
-   //                 GlobalVar.levelOffset[i] = GlobalVar.levelOffset[i] + 1;
-   //                 GlobalVar.levelFrequency[i] = GlobalVar.levelFrequency[i] - (256 * 128);
-   //             }
-   //             if (GlobalVar.levelFrequency[i] >= (256 * 64))
-   //             {
-   //                 GlobalVar.levelOffset[i] = GlobalVar.levelOffset[i] + 2;
-   //                 GlobalVar.levelFrequency[i] = GlobalVar.levelFrequency[i] - (256 * 64);
-   //             }
+                if ((GlobalVar.MIDItypechannel[i] <= (160 + 15)) && (GlobalVar.MIDItypechannel[i] >= (160 + 0)))
+                {
+                    GlobalVar.MIDIvalid[i] = true; // control change
+                }
+                if ((GlobalVar.MIDItypechannel[i] <= (176 + 15)) && (GlobalVar.MIDItypechannel[i] >= (176 + 0)))
+                {
+                    GlobalVar.MIDIvalid[i] = true; // control change
+                }
+                if ((GlobalVar.MIDItypechannel[i] <= (192 + 15)) && (GlobalVar.MIDItypechannel[i] >= (192 + 0)))
+                {
+                    GlobalVar.MIDIvalid[i] = true; // program change
+                }
+                if ((GlobalVar.MIDItypechannel[i] <= (224 + 15)) && (GlobalVar.MIDItypechannel[i] >= (224 + 0)))
+                {
+                    GlobalVar.MIDIvalid[i] = true; // pitch change
+                }
 
             }
         }
