@@ -24,12 +24,12 @@ namespace as_midi
             public static int featureCount = (7 * eventsThisRun);
             public static int[] features = new int[350000];
             public static string arg0 = "";
-            public static long[] leftmono = new long[maxSamples];
+            public static long[] targetWav = new long[maxSamples];
             public static int samples = 0;
 
             public static double[] runningWave = new double[maxSamples];
-            public static long[] calcWave = new long[maxSamples];
-            public static long[] diffWave = new long[maxSamples];
+            public static long[] calcWav = new long[maxSamples];
+            public static long[] diffWav = new long[maxSamples];
 
             public static int[] MIDIdelta = new int[eventsThisRun*2];
             public static int[] MIDItypechannel = new int[eventsThisRun*2];
@@ -74,7 +74,7 @@ namespace as_midi
         static void Main(string[] args)
         {
             string XMLfile = "test047.xml";
-            openWav("target.wav");
+            openWav("target.wav", GlobalVar.targetWav);
             Random random = new Random();
 
             if (args.Length > 0)
@@ -118,30 +118,26 @@ namespace as_midi
 
             for (int i = 0; i < GlobalVar.samples; i++)
             {
-                GlobalVar.sampleDiff[i] = (2 * Math.Abs(GlobalVar.leftmono[i]));
+                GlobalVar.sampleDiff[i] = (2 * Math.Abs(GlobalVar.targetWav[i]));
                 GlobalVar.potentialDiff = GlobalVar.potentialDiff + GlobalVar.sampleDiff[i];  // worst is mirror
             }
 
-
-            //at this point we have the target wav file, and the XML of our MIDI file
-
             BuildMIDIFile();
 
-            // build parameters
-            // call external program
             RenderMIDIToWav();
+
+            openWav(Convert.ToString(GlobalVar.popMember) + ".wav", GlobalVar.calcWav);
 
             // at this point I have both wav files, and the rest of the process should be identical
 
             GlobalVar.myScore = GlobalVar.potentialDiff - AlternateScore(0, GlobalVar.samples);
-            //       Console.WriteLine("score " + GlobalVar.myScore.ToString());
 
             if (GlobalVar.myScore > GlobalVar.bestScore)
-            //            if (GlobalVar.myScore > -999999)
             {
                 WriteBestFile();
             }
 
+            // there is nothing in the framescore array
             WriteScoreFile();
 
             // write out xml
@@ -184,11 +180,12 @@ namespace as_midi
 
             byte[] buildMIDI = new byte[GlobalVar.featureCount];
             int buildNDX = 0;
+            int lastDelta = 0;
 
-            byte[] MThd = new byte["MThd".Length * sizeof(char)];
-            System.Buffer.BlockCopy("MThd".ToCharArray(), 0, MThd, 0, MThd.Length);
-            System.Buffer.BlockCopy(MThd, 0, buildMIDI, 0, MThd.Length);
-            buildNDX += MThd.Length;
+            buildMIDI[buildNDX] = 77; buildNDX++;
+            buildMIDI[buildNDX] = 84; buildNDX++;
+            buildMIDI[buildNDX] = 104; buildNDX++;
+            buildMIDI[buildNDX] = 100; buildNDX++;
 
             buildMIDI[buildNDX] = 0;buildNDX++;
             buildMIDI[buildNDX] = 0; buildNDX++;
@@ -205,23 +202,23 @@ namespace as_midi
             buildMIDI[buildNDX] = 40; buildNDX++;
 
             // write MIDI track header
-            byte[] MTrk = new byte["MTrk".Length * sizeof(char)];
-            System.Buffer.BlockCopy("MTrk".ToCharArray(), 0, MTrk, 0, MThd.Length);
-            System.Buffer.BlockCopy(MTrk, 0, buildMIDI, 0, MTrk.Length);
-            buildNDX += MTrk.Length;
+            buildMIDI[buildNDX] = 77; buildNDX++;
+            buildMIDI[buildNDX] = 84; buildNDX++;
+            buildMIDI[buildNDX] = 114; buildNDX++;
+            buildMIDI[buildNDX] = 107; buildNDX++;
 
             // just holding space,track length will be entered when it is known
             int MIDItrackLocation = buildNDX;
-            int MIDIeventCTR = 0;
             buildMIDI[buildNDX] = 0; buildNDX++;
             buildMIDI[buildNDX] = 0; buildNDX++;
             buildMIDI[buildNDX] = 0; buildNDX++;
             buildMIDI[buildNDX] = 0; buildNDX++;
 
-            bool noMoreEvents = false;
+            bool MoreEvents = true;
+            int trackBytes = 0;
 
             //loop through events
-            while (noMoreEvents) 
+            while (MoreEvents) 
             {
                 int nextDelta = 256 * 256;
                 int nextEvent = -1;
@@ -235,22 +232,63 @@ namespace as_midi
                 }
                 if (nextEvent > -1)
                 {
-
-                    if (true)
+                    int workDelta = GlobalVar.MIDIdelta[nextEvent] - lastDelta;
+                    int tempDelta = 0;
+      
+                    if (workDelta > 16383)
                     {
-
+                        tempDelta = workDelta - 16383;
+                        tempDelta = tempDelta / 16384;
+                        buildMIDI[buildNDX] = Convert.ToByte(128 + tempDelta); buildNDX++; trackBytes++;
+                        workDelta = workDelta - (tempDelta * 16384);
                     }
+                    if (workDelta > 127)
+                    {
+                        tempDelta = workDelta - 127;
+                        tempDelta = tempDelta / 128;
+                        buildMIDI[buildNDX] = Convert.ToByte(128 + tempDelta); buildNDX++; trackBytes++;
+                        workDelta = workDelta - (tempDelta * 128);
+                    }
+                    buildMIDI[buildNDX] = Convert.ToByte(workDelta); buildNDX++; trackBytes++;
 
+                    lastDelta = GlobalVar.MIDIdelta[nextEvent];
                     GlobalVar.MIDIwritten[nextEvent] = true;
-                    // write this event
-                    // need to convert delta
-                    buildMIDI[buildNDX] = 0; buildNDX++;
+                    buildMIDI[buildNDX] = Convert.ToByte(GlobalVar.MIDItypechannel[nextEvent]); buildNDX++; trackBytes++;
+                    if (GlobalVar.MIDIdata1[nextEvent] > 127)
+                        GlobalVar.MIDIdata1[nextEvent] = GlobalVar.MIDIdata1[nextEvent] - 128;
+                    buildMIDI[buildNDX] = Convert.ToByte(GlobalVar.MIDIdata1[nextEvent]); buildNDX++; trackBytes++;
+                    if (GlobalVar.MIDIdata1[nextEvent] > 127)
+                        GlobalVar.MIDIdata1[nextEvent] = GlobalVar.MIDIdata1[nextEvent] - 128;
+                    buildMIDI[buildNDX] = Convert.ToByte(GlobalVar.MIDIdata2[nextEvent]); buildNDX++; trackBytes++;
                 }
                 else
                 {
-                    noMoreEvents = true;
+                    MoreEvents = false;
                 }
             }
+
+            buildMIDI[MIDItrackLocation+0] = 0;
+            buildMIDI[MIDItrackLocation + 1] = 0;
+            buildMIDI[MIDItrackLocation + 2] = 0;
+            buildMIDI[MIDItrackLocation + 3] = 0; 
+
+            int tempBytes = 0;
+
+            if (trackBytes > 16383)
+            {
+                tempBytes = trackBytes - 16383;
+                tempBytes = tempBytes / 16384;
+                buildMIDI[MIDItrackLocation+1] = Convert.ToByte(128 + tempBytes);
+                trackBytes = trackBytes - (tempBytes * 16384);
+            }
+            if (trackBytes > 127)
+            {
+                tempBytes = trackBytes - 127;
+                tempBytes = tempBytes / 128;
+                buildMIDI[MIDItrackLocation + 2] = Convert.ToByte(128 + tempBytes);
+                trackBytes = trackBytes - (tempBytes * 128);
+            }
+            buildMIDI[MIDItrackLocation+3] = Convert.ToByte(trackBytes); 
 
             byte[] midiValues = new byte[buildNDX];
 
@@ -279,7 +317,7 @@ namespace as_midi
             String midiFile = Convert.ToString(GlobalVar.popMember) + ".midi";
             String wavFile = Convert.ToString(GlobalVar.popMember) + ".wav";
 
-            midiFile = "1.MID";
+//            midiFile = "1.MID";
 
             // call Fluidity passing new MIDI file
             // import new WAV file into
@@ -306,7 +344,7 @@ namespace as_midi
 
             for (int i = startX; i < endX; i++)
             {
-                runningScore = runningScore + (Math.Abs(GlobalVar.leftmono[i] - GlobalVar.calcWave[i]));
+                runningScore = runningScore + (Math.Abs(GlobalVar.targetWav[i] - GlobalVar.calcWav[i]));
             }
             return (runningScore);
         }
@@ -327,35 +365,35 @@ namespace as_midi
 
                 while (i < (GlobalVar.samples))
                 {
-                    GlobalVar.diffWave[i] = GlobalVar.leftmono[i] - GlobalVar.calcWave[i];
+                    GlobalVar.diffWav[i] = GlobalVar.targetWav[i] - GlobalVar.calcWav[i];
 
-                    if (GlobalVar.diffWave[i] < 0)
+                    if (GlobalVar.diffWav[i] < 0)
                     {
-                        GlobalVar.diffWave[i] = GlobalVar.diffWave[i] + (256 * 256);
+                        GlobalVar.diffWav[i] = GlobalVar.diffWav[i] + (256 * 256);
                     }
-                    if (GlobalVar.diffWave[i] >= (256 * 256))
+                    if (GlobalVar.diffWav[i] >= (256 * 256))
                     {
-                        GlobalVar.diffWave[i] = (256 * 256) - 1;
+                        GlobalVar.diffWav[i] = (256 * 256) - 1;
                     }
-                    if (GlobalVar.calcWave[i] < 0)
+                    if (GlobalVar.calcWav[i] < 0)
                     {
-                        GlobalVar.calcWave[i] = GlobalVar.calcWave[i] + (256 * 256);
+                        GlobalVar.calcWav[i] = GlobalVar.calcWav[i] + (256 * 256);
                     }
-                    if (GlobalVar.calcWave[i] >= (256 * 256))
+                    if (GlobalVar.calcWav[i] >= (256 * 256))
                     {
-                        GlobalVar.calcWave[i] = (256 * 256) - 1;
+                        GlobalVar.calcWav[i] = (256 * 256) - 1;
                     }
-                    bigint = GlobalVar.calcWave[i] / (256);
-                    smallInt = GlobalVar.calcWave[i] - (256 * bigint);
+                    bigint = GlobalVar.calcWav[i] / (256);
+                    smallInt = GlobalVar.calcWav[i] - (256 * bigint);
 
                     best[pos] = Convert.ToByte(smallInt);
                     best[pos + 1] = Convert.ToByte(bigint);
 
-                    bigint = GlobalVar.diffWave[i] / (256);
-                    smallInt = GlobalVar.diffWave[i] - (256 * bigint);
+                    bigint = GlobalVar.diffWav[i] / (256);
+                    smallInt = GlobalVar.diffWav[i] - (256 * bigint);
 
-                    //     bigint = GlobalVar.leftmono[i] / (256);
-                    //      smallInt = GlobalVar.leftmono[i] - (256 * bigint);
+                    //     bigint = GlobalVar.targetWav[i] / (256);
+                    //      smallInt = GlobalVar.targetWav[i] - (256 * bigint);
 
                     diff[pos] = Convert.ToByte(smallInt);
                     diff[pos + 1] = Convert.ToByte(bigint);
@@ -690,7 +728,7 @@ namespace as_midi
         }
 
         // Returns left and right double arrays. 'right' will be null if sound is mono.
-        static void openWav(string filename)
+        static void openWav(string filename, long[] wavArray)
         {
             byte[] wav = File.ReadAllBytes(filename);
 
@@ -723,7 +761,7 @@ namespace as_midi
             GlobalVar.eventsThisRun = 960;
             GlobalVar.featureCount = (7 * GlobalVar.eventsThisRun);
 
-            GlobalVar.leftmono = new long[GlobalVar.samples];
+            wavArray = new long[GlobalVar.samples];
 
             // Write to double array/s:
             int i = 0;
@@ -732,12 +770,8 @@ namespace as_midi
 
             while (i < (GlobalVar.samples))
             {
-                GlobalVar.leftmono[i] = bytesToInteger(wav[pos], wav[pos + 1]);
-                //                Console.WriteLine(GlobalVar.soundPos.ToString() + " " + pos.ToString() + " " +
-                //                    i.ToString() + " " + wav[pos] + " " + wav[pos + 1] + " " + GlobalVar.leftmono[i].ToString());
-                //                System.Threading.Thread.Sleep(5);
+                wavArray[i] = bytesToInteger(wav[pos], wav[pos + 1]);
                 pos += 2;
-
                 i++;
             }
         }
