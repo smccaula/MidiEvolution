@@ -15,20 +15,17 @@ $RECYCLE.BIN/
 *.msp
 
 # Windows executables
-*.exe
-*.dll
-
-# Media files
-*.wav
+//*.exe
+//*.dll
 
 # Visual Studio files
-*.CACHE
-*.cache
-*.pdb
-*.sou
+//*.CACHE
+//*.cache
+//*.pdb
+//*.sou
 
 # Windows shortcuts
-*.lnk
+//*.lnk
 
 # =========================
 # Operating System Files

@@ -16,7 +16,7 @@ namespace as_clear
         static void Main(string[] args)
         {
             string jobName = "test";
-            int featureCount = 18599;
+            int featureCount = 15360;
             int popCount = 100;
             Random random = new Random();
             int randomJobNumber = random.Next(1, 5000000);

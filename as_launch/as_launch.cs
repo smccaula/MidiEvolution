@@ -23,10 +23,10 @@ namespace as_launch
         static void Main(string[] args)
         {
 
-            string jobName = "stones";
+            string jobName = "test";
             string jobType = "";
             int runSeconds = 60;
-            int maxConcurrent = 4;
+            int maxConcurrent = 1;
             bool keepGoing = true;
             bool keepWaiting = false;
             int myUniqueID = 0;

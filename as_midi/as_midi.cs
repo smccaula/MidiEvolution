@@ -15,12 +15,12 @@ namespace as_midi
     class as_midi
     {
         const double samplesSecond = 44100.0;
-        const int maxSamples = 44100 * 30; // 30 seconds max
+        const int maxSamples = 44100 * 300; // 30 seconds max
 
         public static class GlobalVar
         {
             public static int endTime = 0;
-            public static int eventsThisRun = 1000 * 16 * 1;
+            public static int eventsThisRun = 960;
             public static int featureCount = (7 * eventsThisRun);
             public static int[] features = new int[350000];
             public static string arg0 = "";
@@ -73,7 +73,7 @@ namespace as_midi
 
         static void Main(string[] args)
         {
-            string XMLfile = "test78.xml";
+            string XMLfile = "test047.xml";
             openWav("target.wav");
             Random random = new Random();
 
@@ -87,8 +87,6 @@ namespace as_midi
             {
                 return;
             }
-            Console.WriteLine("3");
-            System.Threading.Thread.Sleep(5000);
 
             bool openXML = false;
             int XMLTry = 0;
@@ -111,18 +109,12 @@ namespace as_midi
                 }
             }
 
-            Console.WriteLine("4");
-            System.Threading.Thread.Sleep(5000);
-
-      //      if (!GetExistingCharacteristics(GlobalVar.popMember)) 
-      //      {
-                //    Console.WriteLine("input error");
-      //          ExportXMLfile(XMLfile);
-      //          return;
-      //      }
-
-            Console.WriteLine("5");
-            System.Threading.Thread.Sleep(5000);
+            if (!GetExistingCharacteristics(GlobalVar.popMember)) 
+            {
+                Console.WriteLine("input error");
+                ExportXMLfile(XMLfile);
+                return;
+            }
 
             for (int i = 0; i < GlobalVar.samples; i++)
             {
@@ -130,8 +122,6 @@ namespace as_midi
                 GlobalVar.potentialDiff = GlobalVar.potentialDiff + GlobalVar.sampleDiff[i];  // worst is mirror
             }
 
-            Console.WriteLine("6");
-            System.Threading.Thread.Sleep(5000);
 
             //at this point we have the target wav file, and the XML of our MIDI file
 
@@ -289,10 +279,14 @@ namespace as_midi
             String midiFile = Convert.ToString(GlobalVar.popMember) + ".midi";
             String wavFile = Convert.ToString(GlobalVar.popMember) + ".wav";
 
+            midiFile = "1.MID";
+
             // call Fluidity passing new MIDI file
             // import new WAV file into
             // can rewrite openWav() to read either target or new 
             // can write this part first and used a pre-created MIDI file
+
+            // fluidsynth -F out.wav /usr/share/sounds/sf2/FluidR3_GM.sf2 myfile.mid
 
             midiProcess = new Process();
 
@@ -300,7 +294,7 @@ namespace as_midi
             midiProcess.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
 
             midiProcess.StartInfo.FileName = "fluidsynth.exe";
-            midiProcess.StartInfo.Arguments = " " + midiFile + " " + wavFile;
+            midiProcess.StartInfo.Arguments = " -F " + wavFile + " merlin_gmv32.sf2 " + midiFile + " ";
             midiProcess.Start();
             midiProcess.WaitForExit();
             midiProcess.Dispose();
@@ -582,6 +576,7 @@ namespace as_midi
             string fn = "";
             int zeroCount = 0;
             bool zeroString = false;
+
             try
             {
                 fn = "mx" + Convert.ToString(popMember);
@@ -594,27 +589,27 @@ namespace as_midi
 
                 for (int i = 0; i < GlobalVar.featureCount; i++)
                 {
-
                     GlobalVar.features[i] = buildChars[i];
 
                     if (GlobalVar.features[i] > 255)
                         GlobalVar.features[i] = 255;
                     if (GlobalVar.features[i] < 0)
                         GlobalVar.features[i] = 0;
-                    if (!GlobalVar.features[i].Equals(0))
-                        zeroCount = 0;
-                    if ((GlobalVar.features[i].Equals(0)) && (zeroString))
-                        zeroCount++;
-                    if (zeroCount > 300)
-                    {
-                        GlobalVar.myScore = 0;
-                        return (false);
-                    }
-                    zeroString = false;
-                    if (GlobalVar.features[i].Equals(0))
-                        zeroString = true;
+       //             if (!GlobalVar.features[i].Equals(0))
+       //                 zeroCount = 0;
+       //             if ((GlobalVar.features[i].Equals(0)) && (zeroString))
+       //                 zeroCount++;
+       //             if (zeroCount > 300)
+       //             {
+       //                 GlobalVar.myScore = 0;
+       //                 return (false);
+       //             }
+       //             zeroString = false;
+       //             if (GlobalVar.features[i].Equals(0))
+       //                 zeroString = true;
                 }
                 AssignToParamaters();
+
             }
             catch (Exception e)
             {
@@ -659,19 +654,19 @@ namespace as_midi
                 }
                 if ((GlobalVar.MIDItypechannel[i] <= (160 + 15)) && (GlobalVar.MIDItypechannel[i] >= (160 + 0)))
                 {
-                    GlobalVar.MIDIvalid[i] = true; // key pressure
+                    GlobalVar.MIDIvalid[i] = false; // key pressure
                 }
                 if ((GlobalVar.MIDItypechannel[i] <= (176 + 15)) && (GlobalVar.MIDItypechannel[i] >= (176 + 0)))
                 {
-                    GlobalVar.MIDIvalid[i] = true; // control change
+                    GlobalVar.MIDIvalid[i] = false; // control change
                 }
                 if ((GlobalVar.MIDItypechannel[i] <= (192 + 15)) && (GlobalVar.MIDItypechannel[i] >= (192 + 0)))
                 {
-                    GlobalVar.MIDIvalid[i] = true; // program change
+                    GlobalVar.MIDIvalid[i] = false; // program change
                 }
                 if ((GlobalVar.MIDItypechannel[i] <= (224 + 15)) && (GlobalVar.MIDItypechannel[i] >= (224 + 0)))
                 {
-                    GlobalVar.MIDIvalid[i] = true; // pitch change
+                    GlobalVar.MIDIvalid[i] = false; // pitch change
                 }
 
             }
@@ -725,8 +720,8 @@ namespace as_midi
             GlobalVar.endTime = Convert.ToInt32((GlobalVar.samples / samplesSecond) * 1000);
             // here can set frame size etc.
 
-            GlobalVar.eventsThisRun = 1000 * 16 * 1;
-            GlobalVar.featureCount = (5 * GlobalVar.eventsThisRun);
+            GlobalVar.eventsThisRun = 960;
+            GlobalVar.featureCount = (7 * GlobalVar.eventsThisRun);
 
             GlobalVar.leftmono = new long[GlobalVar.samples];
 
