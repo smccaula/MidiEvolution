@@ -26,6 +26,5 @@ U:\git\MidiEvolution\bin\test_mysql.pdb
 U:\git\MidiEvolution\test_mysql\obj\x86\Debug\test_mysql.csprojResolveAssemblyReference.cache
 C:\Users\smccaula\Documents\GitHub\MidiEvolution\bin\test_mysql.exe
 C:\Users\smccaula\Documents\GitHub\MidiEvolution\bin\test_mysql.pdb
-C:\Users\smccaula\Documents\GitHub\MidiEvolution\test_mysql\obj\x86\Debug\test_mysql.csprojResolveAssemblyReference.cache
 C:\Users\smccaula\Documents\GitHub\MidiEvolution\test_mysql\obj\x86\Debug\test_mysql.exe
 C:\Users\smccaula\Documents\GitHub\MidiEvolution\test_mysql\obj\x86\Debug\test_mysql.pdb

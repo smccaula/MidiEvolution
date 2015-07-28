@@ -241,6 +241,7 @@ namespace as_midi
                         tempDelta = tempDelta / 16384;
                         buildMIDI[buildNDX] = Convert.ToByte(128 + tempDelta); buildNDX++; trackBytes++;
                         workDelta = workDelta - (tempDelta * 16384);
+                        Console.WriteLine("tempDelta: " + tempDelta);
                     }
                     if (workDelta > 127)
                     {
@@ -248,18 +249,25 @@ namespace as_midi
                         tempDelta = tempDelta / 128;
                         buildMIDI[buildNDX] = Convert.ToByte(128 + tempDelta); buildNDX++; trackBytes++;
                         workDelta = workDelta - (tempDelta * 128);
+                        Console.WriteLine("tempDelta: " + tempDelta);
                     }
                     buildMIDI[buildNDX] = Convert.ToByte(workDelta); buildNDX++; trackBytes++;
+                    Console.WriteLine("workDelta: " + workDelta);
 
                     lastDelta = GlobalVar.MIDIdelta[nextEvent];
                     GlobalVar.MIDIwritten[nextEvent] = true;
+
                     buildMIDI[buildNDX] = Convert.ToByte(GlobalVar.MIDItypechannel[nextEvent]); buildNDX++; trackBytes++;
+                    Console.WriteLine("MIDItypechannel: " + GlobalVar.MIDItypechannel[nextEvent]);
+                    
                     if (GlobalVar.MIDIdata1[nextEvent] > 127)
                         GlobalVar.MIDIdata1[nextEvent] = GlobalVar.MIDIdata1[nextEvent] - 128;
                     buildMIDI[buildNDX] = Convert.ToByte(GlobalVar.MIDIdata1[nextEvent]); buildNDX++; trackBytes++;
+                    Console.WriteLine("MIDIdata1: " + GlobalVar.MIDIdata1[nextEvent]);
                     if (GlobalVar.MIDIdata1[nextEvent] > 127)
                         GlobalVar.MIDIdata1[nextEvent] = GlobalVar.MIDIdata1[nextEvent] - 128;
                     buildMIDI[buildNDX] = Convert.ToByte(GlobalVar.MIDIdata2[nextEvent]); buildNDX++; trackBytes++;
+                    Console.WriteLine("MIDIdata2: " + GlobalVar.MIDIdata2[nextEvent]);
                 }
                 else
                 {
