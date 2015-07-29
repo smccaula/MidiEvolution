@@ -26,7 +26,7 @@ namespace as_launch
             string jobName = "test";
             string jobType = "";
             int runSeconds = 60;
-            int maxConcurrent = 1;
+            int maxConcurrent = 4;
             bool keepGoing = true;
             bool keepWaiting = false;
             int myUniqueID = 0;

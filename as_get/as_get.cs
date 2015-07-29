@@ -14,6 +14,7 @@ namespace as_get
 {
     class as_get
     {
+        const int scoreFrames = 8;
 
         public static class GlobalVar
         {
@@ -35,7 +36,7 @@ namespace as_get
             public static int parentDist = 20;
             public static bool immuneFlag = false;
             public static int worstFrame = -1;
-            public static long[,] frameScore = new long[11,26328];
+            public static long[,] frameScore = new long[11,scoreFrames];
         }
 
         static void Main(string[] args)
@@ -44,7 +45,7 @@ namespace as_get
             // initialize local variables
 
             int myPopNumber = 0;
-            int runLoop = 4;
+            int runLoop = 1;
             long topScore = 0;
             string jobType = null;
             string XMLfile = "";
@@ -467,7 +468,7 @@ namespace as_get
             insertCommand.Parameters.AddWithValue("@parmTop", GlobalVar.bestScore);
 //            insertCommand.Parameters.AddWithValue("@parmPossible", 515886062); //blue
 //            insertCommand.Parameters.AddWithValue("@parmPossible", 820278363); //sine
-            insertCommand.Parameters.AddWithValue("@parmPossible", 173510732); //short
+            insertCommand.Parameters.AddWithValue("@parmPossible", 5939741796); //short
             //    insertCommand.Parameters.AddWithValue("@parmPossible", (GlobalVar.featureCount*8));
             try
             {
@@ -862,7 +863,7 @@ namespace as_get
             {
                 BinaryReader scoreFile = new BinaryReader(File.OpenRead(fn));
 
-                for (int fx = 0; fx < frameCounter; fx++)
+                for (int fx = 0; fx < scoreFrames; fx++)
                 {
                     GlobalVar.frameScore[parent, fx] = scoreFile.ReadInt32();
                 }
@@ -870,7 +871,7 @@ namespace as_get
             }
             catch
             {
-                for (int fx = 0; fx < frameCounter; fx++)
+                for (int fx = 0; fx < scoreFrames; fx++)
                 {
                     GlobalVar.frameScore[parent, fx] = -1;
                 }
@@ -989,7 +990,7 @@ namespace as_get
 
             long bestScore = 0; 
             int fIndex = 0;
-            for (int i = 0; i < GlobalVar.featureCount/4; i++)
+            for (int i = 0; i < scoreFrames; i++)
             {
                 // get parents based on feature/frame
 
@@ -1018,7 +1019,7 @@ namespace as_get
 
 //                Console.WriteLine(i.ToString() + " " + parentIndex.ToString() + " " +
 //                    GlobalVar.frameScore[parentIndex, i].ToString());
-                for (int fx = 0; fx < 4; fx++)
+                for (int fx = 0; fx < (GlobalVar.featureCount / scoreFrames); fx++)
                 {
                     parentIndex = xP1;
                     if ((GlobalVar.random.Next(0, 100) < 50)) // - random no crossover
