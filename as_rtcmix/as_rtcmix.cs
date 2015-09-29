@@ -33,14 +33,13 @@ namespace as_rtcmix
             public static double[] runningWave = new double[maxSamples];
             public static long[] calcWav = new long[maxSamples];
             public static long[] diffWav = new long[maxSamples];
+            // need start, dur, amp, freq, pan
 
-            //            public static int[] MIDIdelta = new int[eventsThisRun * 2];
-            //            public static int[] MIDIduration = new int[eventsThisRun * 2];
-            //            public static int[] MIDItypechannel = new int[eventsThisRun * 2];
-            //            public static int[] MIDIdata1 = new int[eventsThisRun * 2];
-            //            public static int[] MIDIdata2 = new int[eventsThisRun * 2];
-            //            public static bool[] scoreValid = new bool[eventsThisRun * 2];
-            //            public static bool[] MIDIwritten = new bool[eventsThisRun * 2];
+            public static int[] CMIXstart = new int[eventsThisRun * 2];
+            public static int[] CMIXdur = new int[eventsThisRun * 2];
+            public static int[] CMIXamp = new int[eventsThisRun * 2];
+            public static int[] CMIXfreq = new int[eventsThisRun * 2];
+            public static int[] CMIXpan = new int[eventsThisRun * 2];
 
             public static long[] frameScore = new long[eventsThisRun];
             public static long[] sampleDiff = new long[maxSamples];
@@ -208,182 +207,39 @@ namespace as_rtcmix
 
         static void BuildScoreFile()
         {
-            // GetExistingCharacteristics should already have turned XML into MIDI events
+            // GetExistingCharacteristics should already have turned XML into RTCmix events
             // need to sort all events based on time (any event can have any time)
             // New routine to write header and all events into tracks
-            // Have a valid MIDI file by the end of this
 
-            // open output midi file
 
-            byte[] buildScore = new byte[GlobalVar.featureCount];
-            int buildNDX = 0;
-            int lastDelta = 0;
+            // don't know what these are or if I need them
 
-            buildScore[buildNDX] = 77; buildNDX++;
-            buildScore[buildNDX] = 84; buildNDX++;
-            buildScore[buildNDX] = 104; buildNDX++;
-            buildScore[buildNDX] = 100; buildNDX++;
+            string fn = Convert.ToString(GlobalVar.popMember) + ".sco";
 
-            buildScore[buildNDX] = 0; buildNDX++;
-            buildScore[buildNDX] = 0; buildNDX++;
-            buildScore[buildNDX] = 0; buildNDX++;
-            buildScore[buildNDX] = 6; buildNDX++;
-
-            buildScore[buildNDX] = 0; buildNDX++;
-            buildScore[buildNDX] = 0; buildNDX++;
-
-            buildScore[buildNDX] = 0; buildNDX++;
-            buildScore[buildNDX] = 1; buildNDX++;
-
-            //            buildScore[buildNDX] = (256-25); buildNDX++; // failed attempt at SMPTE timing
-            //            buildScore[buildNDX] = 40; buildNDX++;
-
-            buildScore[buildNDX] = 2; buildNDX++;
-            buildScore[buildNDX] = 213; buildNDX++; // trying to get 1000 ticks per second
-
-            // write MIDI track header
-            buildScore[buildNDX] = 77; buildNDX++;
-            buildScore[buildNDX] = 84; buildNDX++;
-            buildScore[buildNDX] = 114; buildNDX++;
-            buildScore[buildNDX] = 107; buildNDX++;
-
-            // just holding space,track length will be entered when it is known
-            int MIDItrackLocation = buildNDX;
-            buildScore[buildNDX] = 0; buildNDX++;
-            buildScore[buildNDX] = 0; buildNDX++;
-            buildScore[buildNDX] = 0; buildNDX++;
-            buildScore[buildNDX] = 0; buildNDX++;
+            StreamWriter scoreText = new StreamWriter(fn);
+            scoreText.WriteLine("rtsetparams(44100, 2)");
+            scoreText.WriteLine("load(\"WAVETABLE\")");
+            scoreText.WriteLine("wavet = maketable(\"wave\", 5000, \"sine\")");
 
             bool MoreEvents = true;
-            int trackBytes = 0;
-            int copyX = 0;
+            int eventX = 0;
 
             //loop through events
             while (MoreEvents)
             {
-                int nextDelta = 256 * 256;
-                int nextEvent = -1;
-                for (int eventX = 0; eventX < (2 * GlobalVar.eventsThisRun); eventX++)
-                {
-                    if ((GlobalVar.MIDIdelta[eventX] < nextDelta) && (!GlobalVar.MIDIwritten[eventX]))
-                    {
-                        nextEvent = eventX;
-                        nextDelta = GlobalVar.MIDIdelta[eventX];
-                    }
-                }
+                // check for conditions such as 0 dur or 0 freq
 
-                if (nextEvent < 0)
-                {
-                    MoreEvents = false;
-                }
+                scoreText.WriteLine("WAVETABLE(" 
+                    + Convert.ToString(GlobalVar.CMIXstart[eventX]/44100) + ","
+                    + Convert.ToString(GlobalVar.CMIXdur[eventX] / 44100) + ","
+                    + Convert.ToString(GlobalVar.CMIXamp[eventX] / 44100) + ","
+                    + Convert.ToString(GlobalVar.CMIXfreq[eventX] / 44100) + ","
+                    + Convert.ToString(GlobalVar.CMIXpan[eventX] / 44100) + ",");
 
-                if (nextEvent > -1)
-                {
-                    GlobalVar.MIDIwritten[nextEvent] = true;
-                    GlobalVar.copyFeatures[copyX + 1] = GlobalVar.MIDIdelta[nextEvent] / 256;
-                    GlobalVar.copyFeatures[copyX] = GlobalVar.MIDIdelta[nextEvent] - (GlobalVar.copyFeatures[copyX + 1] / 256);
-                    GlobalVar.copyFeatures[copyX + 3] = GlobalVar.MIDIduration[nextEvent] / 256; copyX++;
-                    GlobalVar.copyFeatures[copyX + 2] = GlobalVar.MIDIduration[nextEvent] - (GlobalVar.copyFeatures[copyX + 3] / 256);
-                    GlobalVar.copyFeatures[copyX + 4] = GlobalVar.MIDItypechannel[nextEvent];
-                    GlobalVar.copyFeatures[copyX + 5] = GlobalVar.MIDIdata1[nextEvent];
-                    GlobalVar.copyFeatures[copyX + 6] = GlobalVar.MIDIdata2[nextEvent];
-
-                    if (GlobalVar.scoreValid[nextEvent])
-                    {
-                        int workDelta = GlobalVar.MIDIdelta[nextEvent] - lastDelta;
-                        int tempDelta = 0;
-                        Console.WriteLine("workDelta: " + workDelta + " " + tempDelta);
-
-                        if (workDelta >= (128 * 128 * 128))
-                        {
-                            tempDelta = workDelta / (128 * 128 * 128);
-                            buildScore[buildNDX] = Convert.ToByte(128 + tempDelta); buildNDX++; trackBytes++;
-                            workDelta = workDelta - (tempDelta * 128 * 128 * 128);
-                            Console.WriteLine("workDelta: " + workDelta + " " + tempDelta);
-                        }
-                        if (workDelta >= (128 * 128))
-                        {
-                            tempDelta = workDelta / (128 * 128);
-                            buildScore[buildNDX] = Convert.ToByte(128 + tempDelta); buildNDX++; trackBytes++;
-                            workDelta = workDelta - (tempDelta * 128 * 128);
-                            Console.WriteLine("workDelta: " + workDelta + " " + tempDelta);
-                        }
-                        if (workDelta >= 128)
-                        {
-                            tempDelta = workDelta / 128;
-                            buildScore[buildNDX] = Convert.ToByte(128 + tempDelta); buildNDX++; trackBytes++;
-                            workDelta = workDelta - (tempDelta * 128);
-                            Console.WriteLine("workDelta: " + workDelta + " " + tempDelta);
-                        }
-                        buildScore[buildNDX] = Convert.ToByte(workDelta); buildNDX++; trackBytes++;
-                        Console.WriteLine("workDelta: " + workDelta + " " + tempDelta);
-
-                        lastDelta = GlobalVar.MIDIdelta[nextEvent];
-
-                        copyX = copyX + 7;
-
-                        buildScore[buildNDX] = Convert.ToByte(GlobalVar.MIDItypechannel[nextEvent]); buildNDX++; trackBytes++;
-                        //                 Console.WriteLine("MIDItypechannel: " + GlobalVar.MIDItypechannel[nextEvent]);
-
-                        if (GlobalVar.MIDIdata1[nextEvent] > 127)
-                            GlobalVar.MIDIdata1[nextEvent] = GlobalVar.MIDIdata1[nextEvent] - 128;
-                        buildScore[buildNDX] = Convert.ToByte(GlobalVar.MIDIdata1[nextEvent]); buildNDX++; trackBytes++;
-                        //                 Console.WriteLine("MIDIdata1: " + GlobalVar.MIDIdata1[nextEvent]);
-                        if (GlobalVar.MIDIdata2[nextEvent] > 127)
-                            GlobalVar.MIDIdata2[nextEvent] = GlobalVar.MIDIdata2[nextEvent] - 128;
-                        if ((GlobalVar.MIDItypechannel[nextEvent] < 192) || (GlobalVar.MIDItypechannel[nextEvent] > 223))
-                        {
-                            buildScore[buildNDX] = Convert.ToByte(GlobalVar.MIDIdata2[nextEvent]); buildNDX++; trackBytes++;
-                            //                 Console.WriteLine("MIDIdata2: " + GlobalVar.MIDIdata2[nextEvent]);
-                        }
-                    }
-                }
+                if (eventX > GlobalVar.eventsThisRun) MoreEvents = false;
             }
 
-            // EOF marker
-            buildScore[buildNDX] = 0; buildNDX++; trackBytes++;
-            buildScore[buildNDX] = 255; buildNDX++; trackBytes++;
-            buildScore[buildNDX] = 47; buildNDX++; trackBytes++;
-            buildScore[buildNDX] = 0; buildNDX++; trackBytes++;
-
-            buildScore[MIDItrackLocation + 0] = 0;
-            buildScore[MIDItrackLocation + 1] = 0;
-            buildScore[MIDItrackLocation + 2] = 0;
-            buildScore[MIDItrackLocation + 3] = 0;
-
-            int tempBytes = 0;
-
-            Console.WriteLine("trackBytes: " + trackBytes + " " + tempBytes);
-
-            if (trackBytes > 255)
-            {
-                tempBytes = trackBytes / 256;
-                buildScore[MIDItrackLocation + 2] = Convert.ToByte(tempBytes);
-                trackBytes = trackBytes - (tempBytes * 256);
-                Console.WriteLine("trackBytes: " + trackBytes + " " + tempBytes);
-            }
-            buildScore[MIDItrackLocation + 3] = Convert.ToByte(trackBytes);
-            Console.WriteLine("trackBytes: " + trackBytes + " " + tempBytes);
-
-            byte[] scoreValues = new byte[buildNDX];
-
-            Array.Copy(buildScore, scoreValues, buildNDX);
-
-            string fn = Convert.ToString(GlobalVar.popMember) + ".sco";
-
-            if (File.Exists(fn))
-            {
-                File.Delete(fn);
-            }
-
-            File.WriteAllBytes(fn, scoreValues);
-
-            // write midi header
-
-            // loop through features - write an event if valid
-
-            // close file
-
+            scoreText.Close();
         }
 
         static void RenderScoreToWav()
@@ -731,59 +587,18 @@ namespace as_rtcmix
 
         static void AssignToParamaters()
         {
-            int MIDISize = 7;
+            int CMIXSize = 7;
 
             for (int i = 0; i < GlobalVar.eventsThisRun; i++)
             {
 
-                GlobalVar.MIDIdelta[i] = GlobalVar.features[(i * MIDISize)] + (256 * GlobalVar.features[1 + (i * MIDISize)]);
-                GlobalVar.MIDIduration[i] = GlobalVar.features[2 + (i * MIDISize)] + (256 * GlobalVar.features[3 + (i * MIDISize)]);
+                GlobalVar.CMIXstart[i] = GlobalVar.features[(i * CMIXSize)] + (256 * GlobalVar.features[1 + (i * CMIXSize)]);
+                GlobalVar.CMIXdur[i] = GlobalVar.features[2 + (i * CMIXSize)] + (256 * GlobalVar.features[3 + (i * CMIXSize)]);
 
-                GlobalVar.MIDItypechannel[i] = GlobalVar.features[4 + (i * MIDISize)];
+                GlobalVar.CMIXamp[i] = GlobalVar.features[4 + (i * CMIXSize)];
 
-                GlobalVar.MIDIdata1[i] = GlobalVar.features[5 + (i * MIDISize)];
-                GlobalVar.MIDIdata2[i] = GlobalVar.features[6 + (i * MIDISize)];
-
-                GlobalVar.MIDIwritten[i] = false;
-                GlobalVar.scoreValid[i] = false;
-                if ((GlobalVar.MIDItypechannel[i] <= (144 + 15)) && (GlobalVar.MIDItypechannel[i] >= (144 + 0)))
-                {
-                    if (GlobalVar.MIDIdelta[i] < GlobalVar.endTime)
-                        GlobalVar.scoreValid[i] = true; // note on
-                    //create a note off at delta + duration
-                    GlobalVar.MIDIdelta[i + GlobalVar.eventsThisRun] = GlobalVar.MIDIdelta[i] +
-                        GlobalVar.features[2 + (i * MIDISize)] + (256 * GlobalVar.features[3 + (i * MIDISize)]);
-
-                    if (GlobalVar.MIDIdelta[i] + GlobalVar.MIDIdelta[i + GlobalVar.eventsThisRun] > GlobalVar.endTime)
-                        GlobalVar.MIDIdelta[i + GlobalVar.eventsThisRun] = GlobalVar.endTime - GlobalVar.MIDIdelta[i];
-
-                    GlobalVar.MIDItypechannel[i + GlobalVar.eventsThisRun] = GlobalVar.features[4 + (i * MIDISize)] - 16;
-
-                    GlobalVar.MIDIdata1[i + GlobalVar.eventsThisRun] = GlobalVar.features[5 + (i * MIDISize)];
-                    GlobalVar.MIDIdata2[i + GlobalVar.eventsThisRun] = GlobalVar.features[6 + (i * MIDISize)];
-
-                    GlobalVar.scoreValid[i + GlobalVar.eventsThisRun] = GlobalVar.scoreValid[i];
-                }
-                if ((GlobalVar.MIDItypechannel[i] <= (160 + 15)) && (GlobalVar.MIDItypechannel[i] >= (160 + 0)))
-                {
-                    GlobalVar.scoreValid[i] = true; // key pressure
-                }
-                if ((GlobalVar.MIDItypechannel[i] <= (176 + 15)) && (GlobalVar.MIDItypechannel[i] >= (176 + 0)))
-                {
-                    GlobalVar.scoreValid[i] = true; // control change
-                }
-                if ((GlobalVar.MIDItypechannel[i] <= (192 + 8)) && (GlobalVar.MIDItypechannel[i] >= (192 + 0)))
-                {
-                    GlobalVar.scoreValid[i] = true; // program change
-                }
-                if ((GlobalVar.MIDItypechannel[i] <= (208 + 15)) && (GlobalVar.MIDItypechannel[i] >= (208 + 0)))
-                {
-                    GlobalVar.scoreValid[i] = true; // after touch
-                }
-                if ((GlobalVar.MIDItypechannel[i] <= (224 + 15)) && (GlobalVar.MIDItypechannel[i] >= (224 + 0)))
-                {
-                    GlobalVar.scoreValid[i] = true; // pitch change
-                }
+                GlobalVar.CMIXfreq[i] = GlobalVar.features[5 + (i * CMIXSize)];
+                GlobalVar.CMIXpan[i] = GlobalVar.features[6 + (i * CMIXSize)];
 
             }
         }
