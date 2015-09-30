@@ -25,3 +25,4 @@ C:\Users\smccaula\Documents\GitHub\MidiEvolution\as_get\obj\x86\Debug\as_get.exe
 C:\Users\smccaula\Documents\GitHub\MidiEvolution\as_get\obj\x86\Debug\as_get.pdb
 C:\Users\smccaula\Documents\GitHub\MidiEvolution\bin\as_get.exe
 C:\Users\smccaula\Documents\GitHub\MidiEvolution\bin\as_get.pdb
+C:\Users\smccaula\Documents\GitHub\MidiEvolution\as_get\obj\x86\Debug\as_get.csprojResolveAssemblyReference.cache

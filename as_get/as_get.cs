@@ -248,7 +248,7 @@ namespace as_get
 
                 userProcess.StartInfo.CreateNoWindow = true;
                 userProcess.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
-                userProcess.StartInfo.FileName = "as_midi.exe";
+                userProcess.StartInfo.FileName = "as_rtcmix.exe";
 //                userProcess.StartInfo.FileName = "as_user.exe";  // dsm
                 userProcess.StartInfo.Arguments = XMLfile;
                 userProcess.Start();

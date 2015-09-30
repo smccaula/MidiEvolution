@@ -16,14 +16,14 @@ namespace as_rtcmix
     {
 
         const double samplesSecond = 44100.0;
-        const int maxSamples = 44100 * 500; // 30 seconds max
+        const int maxSamples = 44100 * 30; // 30 seconds max
         const int scoreFrames = 8;
 
         public static class GlobalVar
         {
             public static int endTime = 0;
             public static int eventsThisRun = 10000;
-            public static int featureCount = (7 * eventsThisRun);
+            public static int featureCount = (8 * eventsThisRun);
             public static int[] features = new int[350000];
             public static int[] copyFeatures = new int[350000];
             public static string arg0 = "";
@@ -35,11 +35,11 @@ namespace as_rtcmix
             public static long[] diffWav = new long[maxSamples];
             // need start, dur, amp, freq, pan
 
-            public static int[] CMIXstart = new int[eventsThisRun * 2];
-            public static int[] CMIXdur = new int[eventsThisRun * 2];
-            public static int[] CMIXamp = new int[eventsThisRun * 2];
-            public static int[] CMIXfreq = new int[eventsThisRun * 2];
-            public static int[] CMIXpan = new int[eventsThisRun * 2];
+            public static int[] CMIXstart = new int[eventsThisRun];
+            public static int[] CMIXdur = new int[eventsThisRun];
+            public static int[] CMIXamp = new int[eventsThisRun];
+            public static int[] CMIXfreq = new int[eventsThisRun];
+            public static int[] CMIXpan = new int[eventsThisRun];
 
             public static long[] frameScore = new long[eventsThisRun];
             public static long[] sampleDiff = new long[maxSamples];
@@ -106,7 +106,6 @@ namespace as_rtcmix
 
         static void WholeProcess(string XMLfile)
         {
-
             bool openXML = false;
             int XMLTry = 0;
             while (!openXML)
@@ -214,29 +213,53 @@ namespace as_rtcmix
 
             // don't know what these are or if I need them
 
-            string fn = Convert.ToString(GlobalVar.popMember) + ".sco";
+            string scoreFile = Convert.ToString(GlobalVar.popMember) + ".sco";
+            string wavFile = Convert.ToString(GlobalVar.popMember) + ".wav";
 
-            StreamWriter scoreText = new StreamWriter(fn);
+            if (File.Exists(wavFile))
+            {
+                File.Delete(wavFile);
+            }
+            if (File.Exists(scoreFile))
+            {
+                File.Delete(scoreFile);
+            }
+
+            StreamWriter scoreText = new StreamWriter(scoreFile);
+            scoreText.WriteLine("set_option(\"audio = off\")");
             scoreText.WriteLine("rtsetparams(44100, 2)");
+            scoreText.WriteLine("rtoutput(\"" + wavFile + "\")");
+            scoreText.WriteLine("reset(44100)");
             scoreText.WriteLine("load(\"WAVETABLE\")");
             scoreText.WriteLine("wavet = maketable(\"wave\", 5000, \"sine\")");
+            scoreText.WriteLine("note_env = maketable(\"line\", 5000, 0,0, 1,1, 2,1, 3,1, 4,0)");
 
             bool MoreEvents = true;
             int eventX = 0;
+            double tempStart = 0.0;
+            double tempDur = 0.0;
+            double tempFreq = 0.0;
+            double tempPan = 0.0;
+
 
             //loop through events
             while (MoreEvents)
             {
                 // check for conditions such as 0 dur or 0 freq
 
-                scoreText.WriteLine("WAVETABLE(" 
-                    + Convert.ToString(GlobalVar.CMIXstart[eventX]/44100) + ","
-                    + Convert.ToString(GlobalVar.CMIXdur[eventX] / 44100) + ","
-                    + Convert.ToString(GlobalVar.CMIXamp[eventX] / 44100) + ","
-                    + Convert.ToString(GlobalVar.CMIXfreq[eventX] / 44100) + ","
-                    + Convert.ToString(GlobalVar.CMIXpan[eventX] / 44100) + ",");
+                tempStart = GlobalVar.CMIXstart[eventX] * 30.00;
+                tempDur = GlobalVar.CMIXdur[eventX] * 2.00;
+                tempFreq = GlobalVar.CMIXfreq[eventX] * 20000.00;
+                tempPan = GlobalVar.CMIXpan[eventX];
 
-                if (eventX > GlobalVar.eventsThisRun) MoreEvents = false;
+                scoreText.WriteLine("WAVETABLE(" 
+                    + Convert.ToString(tempStart / (256.00*256.00)) + "," // 0.00 to 30.00 (2 bytes)
+                    + Convert.ToString(tempDur / 256.00) + "," // 0.00 to 2.00 (1 byte)
+                    + Convert.ToString((GlobalVar.CMIXamp[eventX])) + "," // 0 to ... (2 bytes)
+                    + Convert.ToString(tempFreq / (256.00*256.00)) + "," // 0 to 20,500 (2 bytes)
+                    + Convert.ToString(tempPan / 256.00) + ")"); // 0.00 to 1.00 (1 byte)
+                eventX++;
+                if (eventX == GlobalVar.eventsThisRun) MoreEvents = false;
             }
 
             scoreText.Close();
@@ -587,19 +610,18 @@ namespace as_rtcmix
 
         static void AssignToParamaters()
         {
-            int CMIXSize = 7;
+            int CMIXSize = 8;
 
             for (int i = 0; i < GlobalVar.eventsThisRun; i++)
             {
 
                 GlobalVar.CMIXstart[i] = GlobalVar.features[(i * CMIXSize)] + (256 * GlobalVar.features[1 + (i * CMIXSize)]);
-                GlobalVar.CMIXdur[i] = GlobalVar.features[2 + (i * CMIXSize)] + (256 * GlobalVar.features[3 + (i * CMIXSize)]);
+                GlobalVar.CMIXdur[i] = GlobalVar.features[2 + (i * CMIXSize)];
 
-                GlobalVar.CMIXamp[i] = GlobalVar.features[4 + (i * CMIXSize)];
+                GlobalVar.CMIXamp[i] = GlobalVar.features[3 + (i * CMIXSize)] + GlobalVar.features[4 + (i * CMIXSize)];
 
-                GlobalVar.CMIXfreq[i] = GlobalVar.features[5 + (i * CMIXSize)];
-                GlobalVar.CMIXpan[i] = GlobalVar.features[6 + (i * CMIXSize)];
-
+                GlobalVar.CMIXfreq[i] = GlobalVar.features[5 + (i * CMIXSize)] + GlobalVar.features[6 + (i * CMIXSize)];
+                GlobalVar.CMIXpan[i] = GlobalVar.features[7 + (i * CMIXSize)];
             }
         }
 
@@ -672,8 +694,8 @@ namespace as_rtcmix
 
             // here can set frame size etc.
 
-            GlobalVar.eventsThisRun = 960;
-            GlobalVar.featureCount = (7 * GlobalVar.eventsThisRun);
+      //      GlobalVar.eventsThisRun = 960;
+       //     GlobalVar.featureCount = (8 * GlobalVar.eventsThisRun);
 
             wavArray = new long[GlobalVar.samples];
 

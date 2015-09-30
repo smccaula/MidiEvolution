@@ -81,11 +81,6 @@ namespace as_clear
             deleteCommand.CommandText = "delete from bonus_score where job_name = @jobParm ";
             deleteCommand.ExecuteNonQuery();
 
-//            Console.WriteLine("delete run data");
-//            deleteCommand.CommandText = "delete from run_data where job_name = @jobParm ";
-//            deleteCommand.CommandText = "delete from run_data";
-//            deleteCommand.ExecuteNonQuery();
-
             Console.WriteLine("delete score detail");
             deleteCommand.CommandText = "delete from score_detail where job_name = @jobParm ";
 //            deleteCommand.CommandText = "delete from score_detail";
@@ -106,31 +101,6 @@ namespace as_clear
             updatePop.Parameters.AddWithValue("@popParm", popCount);
 
             updatePop.ExecuteNonQuery();
-
-//            Console.WriteLine("insert run data");
-//            MySqlCommand insertJob = new MySqlCommand("insert into run_data (job_name, population_count, feature_count, parent_neighborhood, " +
-//                "crossover_type, mutation_zones, mrate1, mrate2, generation_count, job_index, segment_pct) " +
-//                " VALUES (@jobParm, @popParm, @featureParm, @parentParm, @crossParm, @zonesParm, @rate1Parm, @rate2Parm, 0, @ndxParm, 35)", myConnection);
-//            insertJob.Parameters.AddWithValue("@jobParm", jobName);
-//            insertJob.Parameters.AddWithValue("@popParm", popCount);
-//            insertJob.Parameters.AddWithValue("@featureParm", featureCount);
-   //         int parentCount = random.Next(1, 5);
-//            int parentCount = 10; 
-//            insertJob.Parameters.AddWithValue("@parentParm", parentCount);
-//            int crossType = random.Next(0, 2);
-//            int crossType = 1;
-//            insertJob.Parameters.AddWithValue("@crossParm", crossType);
-//            int mutZones = random.Next(1, 3);
-//            int mutZones = 2;
-//            insertJob.Parameters.AddWithValue("@zonesParm", mutZones);
-//            int rate1 = random.Next(75, 125);
-//            insertJob.Parameters.AddWithValue("@rate1Parm", rate1);
-//            int rate2 = random.Next(175, 225);
-//            if (mutZones < 2)
-//                rate2 = rate1;
-//            insertJob.Parameters.AddWithValue("@rate2Parm", rate2);
-//            insertJob.Parameters.AddWithValue("@ndxParm", randomJobNumber);
-//            insertJob.ExecuteNonQuery();
 
             Console.WriteLine("call as_solution");
 

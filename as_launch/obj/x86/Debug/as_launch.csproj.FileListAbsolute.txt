@@ -30,9 +30,9 @@ U:\git\MidiEvolution\as_launch\obj\x86\Debug\as_launch.csprojResolveAssemblyRefe
 C:\Users\smccaula\Documents\GitHub\MidiEvolution\bin\as_launch.exe.config
 C:\Users\smccaula\Documents\GitHub\MidiEvolution\bin\as_launch.exe
 C:\Users\smccaula\Documents\GitHub\MidiEvolution\bin\as_launch.pdb
-C:\Users\smccaula\Documents\GitHub\MidiEvolution\as_launch\obj\x86\Debug\as_launch.csprojResolveAssemblyReference.cache
 C:\Users\smccaula\Documents\GitHub\MidiEvolution\as_launch\obj\x86\Debug\as_launch.exe
 C:\Users\smccaula\Documents\GitHub\MidiEvolution\as_launch\obj\x86\Debug\as_launch.pdb
 U:\github\MidiEvolution\bin\as_launch.exe.config
 U:\github\MidiEvolution\as_launch\obj\x86\Debug\as_launch.exe
 U:\github\MidiEvolution\as_launch\obj\x86\Debug\as_launch.pdb
+C:\Users\smccaula\Documents\GitHub\MidiEvolution\as_launch\obj\x86\Debug\as_launch.csprojResolveAssemblyReference.cache

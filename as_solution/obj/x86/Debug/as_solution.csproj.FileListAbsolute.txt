@@ -24,3 +24,4 @@ U:\git\MidiEvolution\bin\as_solution.exe
 U:\git\MidiEvolution\bin\as_solution.pdb
 U:\git\MidiEvolution\as_solution\obj\x86\Debug\as_solution.exe
 U:\git\MidiEvolution\as_solution\obj\x86\Debug\as_solution.pdb
+C:\Users\smccaula\Documents\GitHub\MidiEvolution\as_solution\obj\x86\Debug\as_solution.csprojResolveAssemblyReference.cache
