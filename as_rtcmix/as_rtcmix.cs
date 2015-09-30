@@ -280,7 +280,7 @@ namespace as_rtcmix
             scoreProcess.StartInfo.Arguments = " < " + scoreFile + " ";
             scoreProcess.Start();
             scoreProcess.WaitForExit();
-            System.Threading.Thread.Sleep(500);
+            System.Threading.Thread.Sleep(0);
             scoreProcess.Dispose();
         }
 
@@ -618,7 +618,7 @@ namespace as_rtcmix
                 GlobalVar.CMIXstart[i] = GlobalVar.features[(i * CMIXSize)] + (256 * GlobalVar.features[1 + (i * CMIXSize)]);
                 GlobalVar.CMIXdur[i] = GlobalVar.features[2 + (i * CMIXSize)];
 
-                GlobalVar.CMIXamp[i] = GlobalVar.features[3 + (i * CMIXSize)] + GlobalVar.features[4 + (i * CMIXSize)];
+                GlobalVar.CMIXamp[i] = GlobalVar.features[3 + (i * CMIXSize)] + (256 * GlobalVar.features[4 + (i * CMIXSize)]);
 
                 GlobalVar.CMIXfreq[i] = GlobalVar.features[5 + (i * CMIXSize)] + GlobalVar.features[6 + (i * CMIXSize)];
                 GlobalVar.CMIXpan[i] = GlobalVar.features[7 + (i * CMIXSize)];
