@@ -153,8 +153,9 @@ namespace as_rtcmix
 
             // at this point I have both wav files, and the rest of the process should be identical
 
+
             GlobalVar.myScore = (GlobalVar.potentialDiff - AlternateScore(0, GlobalVar.samples)) + TotalSound(0, GlobalVar.samples);
-            Console.WriteLine("myScore: " + GlobalVar.myScore + " " + GlobalVar.samples + " " + GlobalVar.potentialDiff);
+//            Console.WriteLine("myScore: " + GlobalVar.myScore + " " + GlobalVar.samples + " " + GlobalVar.potentialDiff);
 
             if (GlobalVar.myScore > GlobalVar.bestScore)
             {
@@ -162,7 +163,7 @@ namespace as_rtcmix
             }
 
             // there is nothing in the framescore array
-            WriteScoreFile();
+//            WriteScoreFile();
 
             // write out xml
             bool outputXML = false;
@@ -188,6 +189,7 @@ namespace as_rtcmix
                     return;
             }
 
+ //           Console.WriteLine("ExportXMLfile");
             ExportXMLfile(XMLfile);
 
             char[] buildChars;
@@ -216,10 +218,6 @@ namespace as_rtcmix
             string scoreFile = Convert.ToString(GlobalVar.popMember) + ".sco";
             string wavFile = Convert.ToString(GlobalVar.popMember) + ".wav";
 
-            if (File.Exists(wavFile))
-            {
-                File.Delete(wavFile);
-            }
             if (File.Exists(scoreFile))
             {
                 File.Delete(scoreFile);
@@ -269,15 +267,28 @@ namespace as_rtcmix
         {
             Process scoreProcess = new Process();
             String scoreFile = Convert.ToString(GlobalVar.popMember) + ".sco";
-            
+
+            string shellFile = Convert.ToString(GlobalVar.popMember) + ".sh";
+
+            if (File.Exists(shellFile))
+            {
+                File.Delete(shellFile);
+            }
+
+            StreamWriter shellText = new StreamWriter(shellFile);
+            shellText.WriteLine("./RTcmix/bin/CMIX -Q < " + scoreFile);
+            //            shellText.WriteLine("./RTcmix/bin/CMIX -Q -D plug:null < " + scoreFile);
+            shellText.Close();
+
             scoreProcess = new Process();
 
             scoreProcess.StartInfo.CreateNoWindow = true;
             scoreProcess.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+            scoreProcess.StartInfo.UseShellExecute = true;
 
-            scoreProcess.StartInfo.FileName = "./RTCmix/bin/CMIX";
-//            scoreProcess.StartInfo.FileName = "./RTCmix/bin/CMIX -D plug:null < " + scoreFile;
-            scoreProcess.StartInfo.Arguments = " -D plug:null < "  + scoreFile;
+            scoreProcess.StartInfo.FileName = "/bin/bash";
+            scoreProcess.StartInfo.Arguments = shellFile;
+
             scoreProcess.Start();
             scoreProcess.WaitForExit();
             System.Threading.Thread.Sleep(0);
@@ -288,14 +299,11 @@ namespace as_rtcmix
         static long AlternateScore(int startX, int endX)
         {
             long runningScore = 0;
-            long worstScore = 0;
 
             for (int i = startX; i < endX; i++)
             {
                 runningScore = runningScore + (Math.Abs(GlobalVar.targetWav[i] - GlobalVar.calcWav[i]));
-                worstScore = worstScore + 2 * Math.Abs(GlobalVar.targetWav[i]);
             }
-            Console.WriteLine("worst = ",worstScore.ToString());
             return (runningScore);
         }
 
@@ -687,8 +695,8 @@ namespace as_rtcmix
 
             if (genSamples < 0.95 * GlobalVar.samples)
             {
-                GlobalVar.wavErr = true;
-                return null;
+     // dsm           GlobalVar.wavErr = true;
+     //           return null;
             }
 
 

@@ -18,4 +18,3 @@ U:\github\MidiEvolution\as_compare\obj\x86\Debug\as_compare.exe
 U:\github\MidiEvolution\as_compare\obj\x86\Debug\as_compare.pdb
 U:\github\MidiEvolution\as_compare\bin\Debug\as_compare.exe
 U:\github\MidiEvolution\as_compare\bin\Debug\as_compare.pdb
-U:\github\MidiEvolution\as_compare\obj\x86\Debug\as_compare.csprojResolveAssemblyReference.cache

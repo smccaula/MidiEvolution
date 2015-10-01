@@ -28,3 +28,4 @@ U:\github\MidiEvolution\as_clear\obj\x86\Debug\as_clear.exe
 U:\github\MidiEvolution\as_clear\obj\x86\Debug\as_clear.pdb
 U:\github\MidiEvolution\bin\as_clear.exe
 U:\github\MidiEvolution\bin\as_clear.pdb
+U:\github\MidiEvolution\as_clear\obj\x86\Debug\as_clear.csprojResolveAssemblyReference.cache

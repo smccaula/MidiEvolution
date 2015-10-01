@@ -275,14 +275,14 @@ namespace as_get
                         return;
                 }
 
-                try
-                {
-                    File.Delete(XMLfile);
-                }
-                catch
-                {
+               // try
+               // {
+               //     File.Delete(XMLfile);
+               // }
+               // catch
+               // {
                     //        Console.Write(".X6." + XMLfile + ".");
-                }
+              //  }
 
                 // update my data and unflag me (should go in final program)
 
