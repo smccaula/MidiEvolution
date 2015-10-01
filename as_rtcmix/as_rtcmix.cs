@@ -226,7 +226,7 @@ namespace as_rtcmix
             }
 
             StreamWriter scoreText = new StreamWriter(scoreFile);
-            scoreText.WriteLine("set_option(\"audio = off\")");
+            scoreText.WriteLine("set_option(\"audio = off\", \"clobber = on\")");
             scoreText.WriteLine("rtsetparams(44100, 2)");
             scoreText.WriteLine("rtoutput(\"" + wavFile + "\")");
             scoreText.WriteLine("reset(44100)");
@@ -255,9 +255,9 @@ namespace as_rtcmix
                 scoreText.WriteLine("WAVETABLE(" 
                     + Convert.ToString(tempStart / (256.00*256.00)) + "," // 0.00 to 30.00 (2 bytes)
                     + Convert.ToString(tempDur / 256.00) + "," // 0.00 to 2.00 (1 byte)
-                    + Convert.ToString((GlobalVar.CMIXamp[eventX])) + "," // 0 to ... (2 bytes)
+                    + Convert.ToString((GlobalVar.CMIXamp[eventX] * 1024) / (256*256)) + "," // 0 to ... (2 bytes)
                     + Convert.ToString(tempFreq / (256.00*256.00)) + "," // 0 to 20,500 (2 bytes)
-                    + Convert.ToString(tempPan / 256.00) + ")"); // 0.00 to 1.00 (1 byte)
+                    + Convert.ToString(tempPan / 256.00) + ",wavet)"); // 0.00 to 1.00 (1 byte)
                 eventX++;
                 if (eventX == GlobalVar.eventsThisRun) MoreEvents = false;
             }
@@ -269,15 +269,15 @@ namespace as_rtcmix
         {
             Process scoreProcess = new Process();
             String scoreFile = Convert.ToString(GlobalVar.popMember) + ".sco";
-            String wavFile = Convert.ToString(GlobalVar.popMember) + ".wav"; // wav file name is buried in score file
-
+            
             scoreProcess = new Process();
 
             scoreProcess.StartInfo.CreateNoWindow = true;
             scoreProcess.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
 
             scoreProcess.StartInfo.FileName = "./RTCmix/bin/CMIX";
-            scoreProcess.StartInfo.Arguments = " < " + scoreFile + " ";
+//            scoreProcess.StartInfo.FileName = "./RTCmix/bin/CMIX -D plug:null < " + scoreFile;
+            scoreProcess.StartInfo.Arguments = " -D plug:null < "  + scoreFile;
             scoreProcess.Start();
             scoreProcess.WaitForExit();
             System.Threading.Thread.Sleep(0);
@@ -288,11 +288,14 @@ namespace as_rtcmix
         static long AlternateScore(int startX, int endX)
         {
             long runningScore = 0;
+            long worstScore = 0;
 
             for (int i = startX; i < endX; i++)
             {
                 runningScore = runningScore + (Math.Abs(GlobalVar.targetWav[i] - GlobalVar.calcWav[i]));
+                worstScore = worstScore + 2 * Math.Abs(GlobalVar.targetWav[i]);
             }
+            Console.WriteLine("worst = ",worstScore.ToString());
             return (runningScore);
         }
 
@@ -690,7 +693,7 @@ namespace as_rtcmix
 
 
 
-            Console.WriteLine("samples: " + GlobalVar.samples);
+ //           Console.WriteLine("samples: " + GlobalVar.samples);
 
             // here can set frame size etc.
 

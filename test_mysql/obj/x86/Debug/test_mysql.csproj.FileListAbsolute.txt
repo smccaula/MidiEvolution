@@ -28,3 +28,8 @@ U:\git\MidiEvolution\bin\test_mysql.pdb
 U:\git\MidiEvolution\test_mysql\obj\x86\Debug\test_mysql.exe
 U:\git\MidiEvolution\test_mysql\obj\x86\Debug\test_mysql.pdb
 C:\Users\smccaula\Documents\GitHub\MidiEvolution\test_mysql\obj\x86\Debug\test_mysql.csprojResolveAssemblyReference.cache
+U:\github\MidiEvolution\bin\test_mysql.exe
+U:\github\MidiEvolution\bin\test_mysql.pdb
+U:\github\MidiEvolution\test_mysql\obj\x86\Debug\test_mysql.csprojResolveAssemblyReference.cache
+U:\github\MidiEvolution\test_mysql\obj\x86\Debug\test_mysql.exe
+U:\github\MidiEvolution\test_mysql\obj\x86\Debug\test_mysql.pdb

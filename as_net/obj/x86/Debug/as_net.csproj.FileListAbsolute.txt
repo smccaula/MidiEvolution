@@ -18,3 +18,7 @@ U:\git\MidiEvolution\as_net\bin\Debug\as_net.exe
 U:\git\MidiEvolution\as_net\bin\Debug\as_net.pdb
 U:\git\MidiEvolution\as_net\obj\x86\Debug\as_net.exe
 U:\git\MidiEvolution\as_net\obj\x86\Debug\as_net.pdb
+U:\github\MidiEvolution\as_net\bin\Debug\as_net.exe
+U:\github\MidiEvolution\as_net\bin\Debug\as_net.pdb
+U:\github\MidiEvolution\as_net\obj\x86\Debug\as_net.exe
+U:\github\MidiEvolution\as_net\obj\x86\Debug\as_net.pdb
