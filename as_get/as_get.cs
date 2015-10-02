@@ -468,7 +468,7 @@ namespace as_get
             insertCommand.Parameters.AddWithValue("@parmTop", GlobalVar.bestScore);
 //            insertCommand.Parameters.AddWithValue("@parmPossible", 515886062); //blue
 //            insertCommand.Parameters.AddWithValue("@parmPossible", 820278363); //sine
-            insertCommand.Parameters.AddWithValue("@parmPossible", 5939741796); //short
+            insertCommand.Parameters.AddWithValue("@parmPossible", 383389338); //short
             //    insertCommand.Parameters.AddWithValue("@parmPossible", (GlobalVar.featureCount*8));
             try
             {

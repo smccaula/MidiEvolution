@@ -14,7 +14,7 @@ namespace as_rtcmix
 {
     class as_rtcmix
     {
-
+        const int bytesPerEvent = 7;
         const double samplesSecond = 44100.0;
         const int maxSamples = 44100 * 30; // 30 seconds max
         const int scoreFrames = 8;
@@ -23,7 +23,7 @@ namespace as_rtcmix
         {
             public static int endTime = 0;
             public static int eventsThisRun = 10000;
-            public static int featureCount = (8 * eventsThisRun);
+            public static int featureCount = (bytesPerEvent * eventsThisRun);
             public static int[] features = new int[350000];
             public static int[] copyFeatures = new int[350000];
             public static string arg0 = "";
@@ -212,9 +212,6 @@ namespace as_rtcmix
             // need to sort all events based on time (any event can have any time)
             // New routine to write header and all events into tracks
 
-
-            // don't know what these are or if I need them
-
             string scoreFile = Convert.ToString(GlobalVar.popMember) + ".sco";
             string wavFile = Convert.ToString(GlobalVar.popMember) + ".wav";
 
@@ -235,6 +232,7 @@ namespace as_rtcmix
             bool MoreEvents = true;
             int eventX = 0;
             double tempStart = 0.0;
+            double tempOffset = 0.0;
             double tempDur = 0.0;
             double tempFreq = 0.0;
             double tempPan = 0.0;
@@ -245,17 +243,25 @@ namespace as_rtcmix
             {
                 // check for conditions such as 0 dur or 0 freq
 
-                tempStart = GlobalVar.CMIXstart[eventX] * 30.00;
-                tempDur = GlobalVar.CMIXdur[eventX] * 2.00;
+//                tempStart = (eventX * GlobalVar.endTime) / GlobalVar.eventsThisRun;
+                tempStart = (eventX * 3.0) / GlobalVar.eventsThisRun;
+            //    tempStart = eventX / GlobalVar.eventsThisRun;
+           //     tempOffset = (-128.0 + GlobalVar.CMIXstart[eventX]) / 256.0;
+           //     tempStart = tempStart + tempOffset;
+                tempDur = GlobalVar.CMIXdur[eventX] * 0.25;
                 tempFreq = GlobalVar.CMIXfreq[eventX] * 20000.00;
                 tempPan = GlobalVar.CMIXpan[eventX];
 
-                scoreText.WriteLine("WAVETABLE(" 
-                    + Convert.ToString(tempStart / (256.00*256.00)) + "," // 0.00 to 30.00 (2 bytes)
-                    + Convert.ToString(tempDur / 256.00) + "," // 0.00 to 2.00 (1 byte)
-                    + Convert.ToString((GlobalVar.CMIXamp[eventX] * 1024) / (256*256)) + "," // 0 to ... (2 bytes)
-                    + Convert.ToString(tempFreq / (256.00*256.00)) + "," // 0 to 20,500 (2 bytes)
-                    + Convert.ToString(tempPan / 256.00) + ",wavet)"); // 0.00 to 1.00 (1 byte)
+                if ((tempStart > 0) && (tempDur > 0) && (tempFreq > 0))
+                {
+                    scoreText.WriteLine("WAVETABLE("
+                        + Convert.ToString(tempStart) + "," // 0.00 to end time (1 bytes)
+                        + Convert.ToString(tempDur / 256.00) + "," // 0.00 to 0.25 (1 byte)
+                        + Convert.ToString((GlobalVar.CMIXamp[eventX] * 1024) / (256 * 256)) + "," // 0 to ... (2 bytes)
+                        + Convert.ToString(tempFreq / (256.00 * 256.00)) + "," // 0 to 20,500 (2 bytes)
+                        + Convert.ToString(tempPan / 256.00) + ",wavet)"); // 0.00 to 1.00 (1 byte)
+                }
+
                 eventX++;
                 if (eventX == GlobalVar.eventsThisRun) MoreEvents = false;
             }
@@ -621,18 +627,15 @@ namespace as_rtcmix
 
         static void AssignToParamaters()
         {
-            int CMIXSize = 8;
+            int CMIXSize = bytesPerEvent;
 
             for (int i = 0; i < GlobalVar.eventsThisRun; i++)
             {
-
-                GlobalVar.CMIXstart[i] = GlobalVar.features[(i * CMIXSize)] + (256 * GlobalVar.features[1 + (i * CMIXSize)]);
-                GlobalVar.CMIXdur[i] = GlobalVar.features[2 + (i * CMIXSize)];
-
-                GlobalVar.CMIXamp[i] = GlobalVar.features[3 + (i * CMIXSize)] + (256 * GlobalVar.features[4 + (i * CMIXSize)]);
-
-                GlobalVar.CMIXfreq[i] = GlobalVar.features[5 + (i * CMIXSize)] + GlobalVar.features[6 + (i * CMIXSize)];
-                GlobalVar.CMIXpan[i] = GlobalVar.features[7 + (i * CMIXSize)];
+                GlobalVar.CMIXstart[i] = GlobalVar.features[(i * CMIXSize)];
+                GlobalVar.CMIXdur[i] = GlobalVar.features[1 + (i * CMIXSize)];
+                GlobalVar.CMIXamp[i] = GlobalVar.features[2 + (i * CMIXSize)] + (256 * GlobalVar.features[3 + (i * CMIXSize)]);
+                GlobalVar.CMIXfreq[i] = GlobalVar.features[4 + (i * CMIXSize)] + (256 * GlobalVar.features[5 + (i * CMIXSize)]);
+                GlobalVar.CMIXpan[i] = GlobalVar.features[6 + (i * CMIXSize)];
             }
         }
 
