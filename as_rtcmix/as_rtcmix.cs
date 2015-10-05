@@ -41,7 +41,7 @@ namespace as_rtcmix
             public static int[] CMIXfreq = new int[eventsThisRun];
             public static int[] CMIXpan = new int[eventsThisRun];
 
-            public static long[] frameScore = new long[eventsThisRun];
+            public static long[] frameScore = new long[scoreFrames];
             public static long[] sampleDiff = new long[maxSamples];
             public static bool wavErr = false;
 
@@ -418,10 +418,7 @@ namespace as_rtcmix
             {
                 int startX = fx * (GlobalVar.samples / scoreFrames);
                 int endX = startX + (GlobalVar.samples / scoreFrames);
-
                 GlobalVar.frameScore[fx] = (GlobalVar.potentialDiff / scoreFrames) - AlternateScore(startX, endX);
- //               GlobalVar.frameScore[fx] = GlobalVar.frameScore[fx] + TotalSound(startX, endX);
-
                 scoreFile.Write(Convert.ToInt32(GlobalVar.frameScore[fx]));
             }
             scoreFile.Close();

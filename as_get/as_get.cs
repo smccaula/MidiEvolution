@@ -15,7 +15,6 @@ namespace as_get
     class as_get
     {
         const int scoreFrames = 8;
-
         public static class GlobalVar
         {
             public static int popCount = 0;
@@ -24,7 +23,7 @@ namespace as_get
             public static int myGeneration = 0;
             public static long myScore = 0;
             public static Random random = new Random();
-            public static int[,] features = new int[150000,21];
+            public static int[,] features = new int[150000,11];
             public static int featureCount = 0;
             public static int launchGeneration = 0;
             public static int myUniqueID = 0;
@@ -34,8 +33,7 @@ namespace as_get
             public static int alternateMut = 300;
             public static int xoverType = 0; 
             public static int parentDist = 20;
-            public static int worstFrame = -1;
-            public static long[,] frameScore = new long[21,26328];
+            public static long[,] frameScore = new long[11,scoreFrames];
         }
 
         static void Main(string[] args)
@@ -156,10 +154,6 @@ namespace as_get
                 if (!GlobalVar.myGeneration.Equals(0))
                 {
                     // don't use as parent while score is not connected to new data
-
-                    string fn = "sx" + Convert.ToString(myPopNumber);
-                    if (File.Exists(fn))
-                        File.Delete(fn);
                     MySqlCommand preupdateCommand = new MySqlCommand("update member_header " +
                         " set member_score = @parmScore " +
                         " where job_name = @parmJob and population_index = @parmPop and member_index = @parmMember ", myConnection);
@@ -302,13 +296,12 @@ namespace as_get
                 }
 
                 MySqlCommand updateCommand = new MySqlCommand("update member_header " +
-                    " set member_generation = @parmGeneration, member_score = @parmScore, worst_frame = @parmWorst " +
+                    " set member_generation = @parmGeneration, member_score = @parmScore " +
                     " where job_name = @parmJob and population_index = @parmPop and member_index = @parmMember ", myConnection);
 
                 GlobalVar.myGeneration++;
                 updateCommand.Parameters.AddWithValue("@parmGeneration", GlobalVar.myGeneration);
                 updateCommand.Parameters.AddWithValue("@parmScore", GlobalVar.myScore);
-                updateCommand.Parameters.AddWithValue("@parmWorst", GlobalVar.worstFrame);
                 updateCommand.Parameters.AddWithValue("@parmJob", GlobalVar.jobName);
                 updateCommand.Parameters.AddWithValue("@parmPop", GlobalVar.popIndex);
                 updateCommand.Parameters.AddWithValue("@parmMember", myPopNumber);
@@ -524,7 +517,7 @@ namespace as_get
             bool isBusy = false;
             int youngLimit = GlobalVar.popCount / 10;
 
-            MySqlCommand getCommand = new MySqlCommand("select member_generation, member_score, worst_frame from member_header " +
+            MySqlCommand getCommand = new MySqlCommand("select member_generation, member_score from member_header " +
                 " where job_name = @parmJob and population_index = @parmPop and member_index = @parmMember", myConnection);
 
 
@@ -584,10 +577,7 @@ namespace as_get
                     {
                         myReader.Read();
                         GlobalVar.myGeneration = myReader.GetInt32("member_generation"); 
-                        GlobalVar.myScore = myReader.GetInt64("member_score");
-                        GlobalVar.worstFrame = -1;
-                        if (!(myReader["worst_frame"] == DBNull.Value))
-                            GlobalVar.worstFrame = myReader.GetInt32("worst_frame");                            
+                        GlobalVar.myScore = myReader.GetInt64("member_score");                          
                     }
                     myReader.Close();
                 }
@@ -824,14 +814,11 @@ namespace as_get
         static void GetExistingScores(int popMember, int parent)
         {
             string fn = "sx" + Convert.ToString(popMember);
-         //   int frameCounter = GlobalVar.featureCount / 4;
-            int frameCounter = scoreFrames; // dsm
-
             try
             {
                 BinaryReader scoreFile = new BinaryReader(File.OpenRead(fn));
 
-                for (int fx = 0; fx < frameCounter; fx++)
+                for (int fx = 0; fx < scoreFrames; fx++)
                 {
                     GlobalVar.frameScore[parent, fx] = scoreFile.ReadInt32();
                 }
@@ -839,7 +826,7 @@ namespace as_get
             }
             catch
             {
-                for (int fx = 0; fx < frameCounter; fx++)
+                for (int fx = 0; fx < scoreFrames; fx++)
                 {
                     GlobalVar.frameScore[parent, fx] = -1;
                 }
@@ -861,7 +848,7 @@ namespace as_get
             int neighborhood = GlobalVar.random.Next(1,(GlobalVar.parentDist+1));
             nextNeighbor = popMember;
 
-            for (int nx = 0; nx < 10; nx++)
+            for (int nx = 0; nx < 5; nx++)
             {
                 if ((nextNeighbor - neighborhood) < 1)
                     nextNeighbor = GlobalVar.popCount;
@@ -871,7 +858,7 @@ namespace as_get
             }
 
             nextNeighbor = popMember;
-            for (int nx = 0; nx < 10; nx++)
+            for (int nx = 0; nx < 5; nx++)
             {
                 nextNeighbor = nextNeighbor + neighborhood;
                 if (nextNeighbor >= GlobalVar.popCount)
@@ -882,14 +869,14 @@ namespace as_get
 
             long bestScore = 0; 
             int fIndex = 0;
-            for (int i = 0; i < scoreFrames / 4; i++)
-             // dsm   for (int i = 0; i < GlobalVar.featureCount/4; i++)
+            for (int i = 0; i < scoreFrames; i++)
             {
                 // get parents based on feature/frame
 
                 xP1 = 0;
                 bestScore = GlobalVar.frameScore[xP1, i];
-                for (int px = 1; px < 11; px++)
+                if (bestScore < 0) bestScore = 0;
+                for (int px = 1; px < 6; px++)
                 {
                     if ((GlobalVar.frameScore[px, i] > GlobalVar.frameScore[xP1, i]) && (GlobalVar.frameScore[px, i] > 0))
                     {
@@ -900,7 +887,8 @@ namespace as_get
 
                 xP2 = 0;
                 bestScore = GlobalVar.frameScore[xP2, i];
-                for (int px = 11; px < 21; px++)
+                if (bestScore < 0) bestScore = 0;
+                for (int px = 6; px < 11; px++)
                 {
                     if ((GlobalVar.frameScore[px, i] > GlobalVar.frameScore[xP2, i]) && (GlobalVar.frameScore[px, i] > 0))
                     {
@@ -913,10 +901,10 @@ namespace as_get
                 for (int fx = 0; fx < 4; fx++)
                 {
                     parentIndex = xP1;
-                    if ((GlobalVar.random.Next(0, 100) < 50)) 
+                    if ((GlobalVar.random.Next(0, 100) < 50)) // - random no crossover
                         parentIndex = xP2;
                     GlobalVar.features[fIndex, 0] = GlobalVar.features[fIndex, parentIndex];
-                    if ((GlobalVar.frameScore[parentIndex, i] < 1))
+                    if ((GlobalVar.frameScore[parentIndex, i] < 0))
                     {
                         GlobalVar.features[fIndex, 0] = GlobalVar.random.Next(0, 255);
                     }
@@ -944,9 +932,7 @@ namespace as_get
 
         static string ExportXMLfile(int popMember)
         {
-
             string filename = "";
-
             try
             {
                 filename = GlobalVar.jobName + GlobalVar.popIndex.ToString() + popMember.ToString() + ".xml";
@@ -991,13 +977,6 @@ namespace as_get
                 xml.WriteElementString("Best", GlobalVar.bestScore.ToString());
                 xml.WriteWhitespace("\n  ");
 
-//                for (int i = 0; i < GlobalVar.featureCount; i++)
-//                {
-//                    xml.WriteElementString("Index", i.ToString());
-//                    xml.WriteElementString("Value", GlobalVar.features[i, 0].ToString());
-//                    xml.WriteWhitespace("\n  ");
-//                }
-
                 xml.WriteEndElement();
                 xml.WriteWhitespace("\n");
 
@@ -1014,7 +993,6 @@ namespace as_get
             {
                 filename = "error";
             }
-
 
             return filename;
         }
@@ -1038,11 +1016,6 @@ namespace as_get
                         if (elementString.Equals("Score"))
                         {
                             GlobalVar.myScore = Convert.ToInt64(reader.Value);
-                        }
-                        GlobalVar.worstFrame = -1;
-                        if (elementString.Equals("worstndx"))
-                        {
-                            GlobalVar.worstFrame = Convert.ToInt32(reader.Value);
                         }
 
                         break;
