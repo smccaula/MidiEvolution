@@ -22,7 +22,7 @@ namespace as_rtcmix
         public static class GlobalVar
         {
             public static int endTime = 0;
-            public static int eventsThisRun = 10000;
+            public static int eventsThisRun = 500;
             public static int featureCount = (bytesPerEvent * eventsThisRun);
             public static int[] features = new int[350000];
             public static int[] copyFeatures = new int[350000];
@@ -73,6 +73,8 @@ namespace as_rtcmix
             public static int mostSamples = 0;
             public static bool allFrames = false;
             public static int startFrame = 0;
+            public static int waveCount = 0;
+            public static int nonZeroCtr = 0;
         }
 
         static void Main(string[] args)
@@ -93,103 +95,41 @@ namespace as_rtcmix
                 return;
             }
 
-            try
-            {
-                WholeProcess(XMLfile);
-            }
-            catch
-            {
-                return;
-            }
+                bool processSuccess = false;
+                int processTry = 0;
 
+                while (!processSuccess)
+                {
+                GlobalVar.nonZeroCtr = 0;
+                    processSuccess = PreProcess(XMLfile);
+                if (!processSuccess)
+                {
+                    Console.WriteLine("retry " + processTry.ToString() + " nz-" + GlobalVar.nonZeroCtr.ToString() + " wc-"
+                        + GlobalVar.waveCount.ToString() + " pop-"  
+                        + GlobalVar.popMember.ToString() + " gen-" +  GlobalVar.myGeneration.ToString() + " sco-" 
+                        + GlobalVar.myScore.ToString());
+                    System.Threading.Thread.Sleep(1000);
+                }
+                processTry++;
+                    if (processTry > 5)
+                    {
+                    // error recovery routines
+                    Console.WriteLine("quitting");
+                        return;
+                    }
+
+                }
+            OutputAllFiles(XMLfile);
         }
 
-        static void WholeProcess(string XMLfile)
+        static  void OutputAllFiles(string XMLfile)
         {
-            bool openXML = false;
-            int XMLTry = 0;
-            while (!openXML)
-            {
-                XMLTry++;
-                try
-                {
-                    openXML = true;
-                    ImportXMLfile(XMLfile);
-                }
-                catch
-                {
-                    System.Threading.Thread.Sleep(10);
-                    openXML = false;
-                }
-                if (XMLTry > 5)
-                {
-                    return;
-                }
-            }
-
-            if (!GetExistingCharacteristics(GlobalVar.popMember))
-            {
-                Console.WriteLine("input error");
-                ExportXMLfile(XMLfile);
-                return;
-            }
-
-            for (int i = 0; i < GlobalVar.samples; i++)
-            {
-                GlobalVar.sampleDiff[i] = (2 * Math.Abs(GlobalVar.targetWav[i]));
-                GlobalVar.potentialDiff = GlobalVar.potentialDiff + GlobalVar.sampleDiff[i];  // worst is mirror
-            }
-
-            BuildScoreFile();
-
-            RenderScoreToWav();
-
-            GlobalVar.calcWav = openWav(Convert.ToString(GlobalVar.popMember) + ".wav");
-
-            if (GlobalVar.wavErr)
-            {
-                return;
-            }
-
-            // at this point I have both wav files, and the rest of the process should be identical
-
-
-            GlobalVar.myScore = (GlobalVar.potentialDiff - AlternateScore(0, GlobalVar.samples)) + TotalSound(0, GlobalVar.samples);
-//            Console.WriteLine("myScore: " + GlobalVar.myScore + " " + GlobalVar.samples + " " + GlobalVar.potentialDiff);
-
+            // write sx, mx and xml files, only on successful completion of process
+            WriteScoreFile();
             if (GlobalVar.myScore > GlobalVar.bestScore)
             {
                 //x          WriteBestFile();
             }
-
-            // there is nothing in the framescore array
-//            WriteScoreFile();
-
-            // write out xml
-            bool outputXML = false;
-            int XMLOut = 0;
-            while (!outputXML)
-            {
-                XMLOut++;
-                try
-                {
-                    outputXML = true;
-                    if (ExportXMLfile(XMLfile) > 0)
-                    {
-                        outputXML = false;
-                        System.Threading.Thread.Sleep(10);
-                    }
-                }
-                catch
-                {
-                    System.Threading.Thread.Sleep(10);
-                    outputXML = false;
-                }
-                if (XMLOut > 5)
-                    return;
-            }
-
- //           Console.WriteLine("ExportXMLfile");
             ExportXMLfile(XMLfile);
 
             char[] buildChars;
@@ -206,7 +146,53 @@ namespace as_rtcmix
             File.WriteAllText(fn, bs);
         }
 
-        static void BuildScoreFile()
+        static bool PreProcess(string XMLfile)
+        {
+            ImportXMLfile(XMLfile);
+
+            if (!GetExistingCharacteristics(GlobalVar.popMember))
+            {
+                Console.WriteLine("input error");
+                return(false);
+            }
+
+            if (GlobalVar.nonZeroCtr < (GlobalVar.featureCount / 2))
+            {
+                Console.WriteLine("missing input");
+                return (false);
+            }
+
+            for (int i = 0; i < GlobalVar.samples; i++)
+            {
+                GlobalVar.sampleDiff[i] = (Math.Abs(GlobalVar.targetWav[i]));
+                GlobalVar.potentialDiff = GlobalVar.potentialDiff + GlobalVar.sampleDiff[i] + (8 * 1024);  // worst is mirror
+            }
+
+            if (!BuildScoreFile())
+            {
+                Console.WriteLine("CMIX file error " + GlobalVar.waveCount);
+                return(false);
+            }
+
+
+
+            if (!RenderScoreToWav())
+            {
+                Console.WriteLine("CMIX wav error " + GlobalVar.waveCount);
+                return(false);
+            }
+
+            // at this point I have both wav files, and the rest of the process should be identical
+
+
+            GlobalVar.myScore = (GlobalVar.potentialDiff - AlternateScore(0, GlobalVar.samples));
+            Console.WriteLine("myScore: " + GlobalVar.myScore + " " + GlobalVar.waveCount + " " + GlobalVar.samples + " " + GlobalVar.potentialDiff
+                + " pop-"  + GlobalVar.popMember.ToString() + " gen-" + GlobalVar.myGeneration.ToString());
+
+            return (true);
+        }
+
+        static bool BuildScoreFile()
         {
             // GetExistingCharacteristics should already have turned XML into RTCmix events
             // need to sort all events based on time (any event can have any time)
@@ -232,6 +218,7 @@ namespace as_rtcmix
             bool MoreEvents = true;
             int eventX = 0;
             double tempStart = 0.0;
+            double tempLength = 0.0;
             double tempOffset = 0.0;
             double tempDur = 0.0;
             double tempFreq = 0.0;
@@ -243,17 +230,25 @@ namespace as_rtcmix
             {
                 // check for conditions such as 0 dur or 0 freq
 
-//                tempStart = (eventX * GlobalVar.endTime) / GlobalVar.eventsThisRun;
-                tempStart = (eventX * 3.0) / GlobalVar.eventsThisRun;
+                //                tempStart = (eventX * GlobalVar.endTime) / GlobalVar.eventsThisRun;
+                tempLength = (Convert.ToDouble((GlobalVar.samples / samplesSecond)));
+                tempStart = (eventX * tempLength) / GlobalVar.eventsThisRun;
             //    tempStart = eventX / GlobalVar.eventsThisRun;
-           //     tempOffset = (-128.0 + GlobalVar.CMIXstart[eventX]) / 256.0;
-           //     tempStart = tempStart + tempOffset;
+                tempOffset = (-128.0 + GlobalVar.CMIXstart[eventX]) / 4096.0;
+
+      //          Console.WriteLine("times : " + Convert.ToString(tempLength) + " " +
+      //              Convert.ToString(tempStart) + " " + Convert.ToString(tempOffset));
+
+                tempStart = tempStart + tempOffset;
+
+
                 tempDur = GlobalVar.CMIXdur[eventX] * 0.25;
                 tempFreq = GlobalVar.CMIXfreq[eventX] * 20000.00;
                 tempPan = GlobalVar.CMIXpan[eventX];
 
                 if ((tempStart > 0) && (tempDur > 0) && (tempFreq > 0))
                 {
+                    GlobalVar.waveCount++;
                     scoreText.WriteLine("WAVETABLE("
                         + Convert.ToString(tempStart) + "," // 0.00 to end time (1 bytes)
                         + Convert.ToString(tempDur / 256.00) + "," // 0.00 to 0.25 (1 byte)
@@ -265,11 +260,16 @@ namespace as_rtcmix
                 eventX++;
                 if (eventX == GlobalVar.eventsThisRun) MoreEvents = false;
             }
-
             scoreText.Close();
+
+            if (GlobalVar.waveCount < 1)
+            {
+                return (false);
+            }
+            return (true);
         }
 
-        static void RenderScoreToWav()
+        static bool RenderScoreToWav()
         {
             Process scoreProcess = new Process();
             String scoreFile = Convert.ToString(GlobalVar.popMember) + ".sco";
@@ -297,8 +297,16 @@ namespace as_rtcmix
 
             scoreProcess.Start();
             scoreProcess.WaitForExit();
-            System.Threading.Thread.Sleep(0);
             scoreProcess.Dispose();
+
+            GlobalVar.calcWav = openWav(Convert.ToString(GlobalVar.popMember) + ".wav");
+
+            if (GlobalVar.wavErr)
+            {
+                return(false);
+            }
+
+            return (true);
         }
 
 
@@ -412,7 +420,7 @@ namespace as_rtcmix
                 int endX = startX + (GlobalVar.samples / scoreFrames);
 
                 GlobalVar.frameScore[fx] = (GlobalVar.potentialDiff / scoreFrames) - AlternateScore(startX, endX);
-                GlobalVar.frameScore[fx] = GlobalVar.frameScore[fx] + TotalSound(startX, endX);
+ //               GlobalVar.frameScore[fx] = GlobalVar.frameScore[fx] + TotalSound(startX, endX);
 
                 scoreFile.Write(Convert.ToInt32(GlobalVar.frameScore[fx]));
             }
@@ -607,7 +615,8 @@ namespace as_rtcmix
                 for (int i = 0; i < GlobalVar.featureCount; i++)
                 {
                     GlobalVar.features[i] = buildChars[i];
-
+                    if (GlobalVar.features[i] != 0)
+                        GlobalVar.nonZeroCtr++;
                     if (GlobalVar.features[i] > 255)
                         GlobalVar.features[i] = 255;
                     if (GlobalVar.features[i] < 0)
@@ -696,10 +705,10 @@ namespace as_rtcmix
                 genSamples = wavSize / 2;
             }
 
-            if (genSamples < 0.95 * GlobalVar.samples)
+            if (genSamples < 0.8 * GlobalVar.samples)
             {
-     // dsm           GlobalVar.wavErr = true;
-     //           return null;
+                GlobalVar.wavErr = true;
+                return null;
             }
 
 

@@ -24,7 +24,7 @@ namespace as_get
             public static int myGeneration = 0;
             public static long myScore = 0;
             public static Random random = new Random();
-            public static int[,] features = new int[150000,11];
+            public static int[,] features = new int[150000,21];
             public static int featureCount = 0;
             public static int launchGeneration = 0;
             public static int myUniqueID = 0;
@@ -34,9 +34,8 @@ namespace as_get
             public static int alternateMut = 300;
             public static int xoverType = 0; 
             public static int parentDist = 20;
-            public static bool immuneFlag = false;
             public static int worstFrame = -1;
-            public static long[,] frameScore = new long[11,scoreFrames];
+            public static long[,] frameScore = new long[21,26328];
         }
 
         static void Main(string[] args)
@@ -157,6 +156,10 @@ namespace as_get
                 if (!GlobalVar.myGeneration.Equals(0))
                 {
                     // don't use as parent while score is not connected to new data
+
+                    string fn = "sx" + Convert.ToString(myPopNumber);
+                    if (File.Exists(fn))
+                        File.Delete(fn);
                     MySqlCommand preupdateCommand = new MySqlCommand("update member_header " +
                         " set member_score = @parmScore " +
                         " where job_name = @parmJob and population_index = @parmPop and member_index = @parmMember ", myConnection);
@@ -275,14 +278,14 @@ namespace as_get
                         return;
                 }
 
-               // try
-               // {
-               //     File.Delete(XMLfile);
-               // }
-               // catch
-               // {
+                try
+                {
+                    File.Delete(XMLfile);
+                }
+                catch
+                {
                     //        Console.Write(".X6." + XMLfile + ".");
-              //  }
+                }
 
                 // update my data and unflag me (should go in final program)
 
@@ -468,7 +471,7 @@ namespace as_get
             insertCommand.Parameters.AddWithValue("@parmTop", GlobalVar.bestScore);
 //            insertCommand.Parameters.AddWithValue("@parmPossible", 515886062); //blue
 //            insertCommand.Parameters.AddWithValue("@parmPossible", 820278363); //sine
-            insertCommand.Parameters.AddWithValue("@parmPossible", 383389338); //short
+            insertCommand.Parameters.AddWithValue("@parmPossible", 1054369613); //short
             //    insertCommand.Parameters.AddWithValue("@parmPossible", (GlobalVar.featureCount*8));
             try
             {
@@ -550,43 +553,6 @@ namespace as_get
                 // query X lowest generation members, pick one at random
 
                 randomPopNumber = GlobalVar.random.Next(1, GlobalVar.popCount);
-           //     Console.WriteLine("random : " + randomPopNumber.ToString());
-
-       //         if (GlobalVar.launchGeneration > (GlobalVar.popCount/2))
-       //         {
-       //             youngestCommand.Parameters.Clear();
-       //             youngestCommand.Parameters.AddWithValue("@parmJob", GlobalVar.jobName);
-       //             youngestCommand.Parameters.AddWithValue("@parmYoung", youngLimit);
-       //             try
-       //             {
-       //                 memberReader = youngestCommand.ExecuteReader();
-
-       //                 gotResults = memberReader.HasRows;
-       //                 int getPopNumber = GlobalVar.random.Next(1, youngLimit);
-       //                 
-       //                          if (gotResults)
-       //                          {
-       //                              bool moreRows = true;
-       //                              for (int getX = 0; getX < getPopNumber; getX++)
-       //                              {
-       //                                  if (moreRows)
-       //                                  {
-       //                                      moreRows = memberReader.Read();
-       //                                      randomPopNumber = memberReader.GetInt32("member_index");
-       //                                  }
-       //                              }
-       //                          }
-       //                 memberReader.Close();
-       //             }
-       //             catch (Exception e)
-       //             {
-       //                 Console.WriteLine(e.ToString());
-       //             }
-
-       //         }
-
-       //         if (GlobalVar.random.Next(0,100) > 75)
-       //             randomPopNumber = GlobalVar.random.Next(0, GlobalVar.popCount);
 
                 getCommand.Parameters.Clear();
                 getCommand.Parameters.AddWithValue("@parmJob", GlobalVar.jobName);
@@ -858,12 +824,14 @@ namespace as_get
         static void GetExistingScores(int popMember, int parent)
         {
             string fn = "sx" + Convert.ToString(popMember);
-            int frameCounter = GlobalVar.featureCount / 4;
+         //   int frameCounter = GlobalVar.featureCount / 4;
+            int frameCounter = scoreFrames; // dsm
+
             try
             {
                 BinaryReader scoreFile = new BinaryReader(File.OpenRead(fn));
 
-                for (int fx = 0; fx < scoreFrames; fx++)
+                for (int fx = 0; fx < frameCounter; fx++)
                 {
                     GlobalVar.frameScore[parent, fx] = scoreFile.ReadInt32();
                 }
@@ -871,7 +839,7 @@ namespace as_get
             }
             catch
             {
-                for (int fx = 0; fx < scoreFrames; fx++)
+                for (int fx = 0; fx < frameCounter; fx++)
                 {
                     GlobalVar.frameScore[parent, fx] = -1;
                 }
@@ -886,117 +854,42 @@ namespace as_get
             int mutatePosition = 0;
             int mutateValue = 0;
             int parentIndex = 0;
-    //        long parentScore = -1;
             int nextNeighbor = 0;
-    //        int xoverPoint = 0;
-    //        int xoverDir = 0;
             int xP1 = 0;
             int xP2 = 0;
             int parentX = 1;
-
             int neighborhood = GlobalVar.random.Next(1,(GlobalVar.parentDist+1));
-
- //           GlobalVar.xoverType = GlobalVar.random.Next(0, 300);
-
-            GlobalVar.immuneFlag = true;
-
-      //      MySqlDataReader myReader = null;
-
-            // get parent 1 candidates 
-
-//            MySqlCommand getCommand = new MySqlCommand("select member_index, member_score from member_header " +
-//    " where job_name = @parmJob and population_index = @parmPop and member_index in (@p1,@p2,@p3,@p4,@p5) " +
-//    " order by member_score desc limit 1", myConnection);
-
-//            getCommand.Parameters.AddWithValue("@parmJob", GlobalVar.jobName);
-//            getCommand.Parameters.AddWithValue("@parmPop", GlobalVar.popIndex);
-
             nextNeighbor = popMember;
 
-            if ((nextNeighbor - neighborhood) < 1)
-                nextNeighbor = GlobalVar.popCount;
-            nextNeighbor = nextNeighbor - neighborhood;
-
-//            getCommand.Parameters.AddWithValue("@p1", nextNeighbor);
-            GetExistingScores(nextNeighbor, parentX);
-            parentX++;
-
-            if ((nextNeighbor - neighborhood) < 1)
-                nextNeighbor = GlobalVar.popCount;
-            nextNeighbor = nextNeighbor - neighborhood;
-
-//            getCommand.Parameters.AddWithValue("@p2", nextNeighbor);
-            GetExistingScores(nextNeighbor, parentX);
-            parentX++;
-
-            if ((nextNeighbor - neighborhood) < 1)
-                nextNeighbor = GlobalVar.popCount;
-            nextNeighbor = nextNeighbor - neighborhood;
-
-//            getCommand.Parameters.AddWithValue("@p3", nextNeighbor);
-            GetExistingScores(nextNeighbor, parentX);
-            parentX++;
-
-            if ((nextNeighbor - neighborhood) < 1)
-                nextNeighbor = GlobalVar.popCount;
-            nextNeighbor = nextNeighbor - neighborhood;
-
-//            getCommand.Parameters.AddWithValue("@p4", nextNeighbor);
-            GetExistingScores(nextNeighbor, parentX);
-            parentX++;
-
-            if ((nextNeighbor - neighborhood) < 1)
-                nextNeighbor = GlobalVar.popCount;
-            nextNeighbor = nextNeighbor - neighborhood;
-
-//            getCommand.Parameters.AddWithValue("@p5", nextNeighbor);
-            GetExistingScores(nextNeighbor, parentX);
-            parentX++;
+            for (int nx = 0; nx < 10; nx++)
+            {
+                if ((nextNeighbor - neighborhood) < 1)
+                    nextNeighbor = GlobalVar.popCount;
+                nextNeighbor = nextNeighbor - neighborhood;
+                GetExistingScores(nextNeighbor, parentX);
+                parentX++;
+            }
 
             nextNeighbor = popMember;
-            nextNeighbor = nextNeighbor + neighborhood;
-            if (nextNeighbor >= GlobalVar.popCount)
-                nextNeighbor = (nextNeighbor - GlobalVar.popCount)+1;
-//            getCommand.Parameters.AddWithValue("@p1", nextNeighbor);
-            GetExistingScores(nextNeighbor, parentX);
-            parentX++;
-
-            nextNeighbor = nextNeighbor + neighborhood;
-            if (nextNeighbor >= GlobalVar.popCount)
-                nextNeighbor = (nextNeighbor - GlobalVar.popCount)+1;
-//            getCommand.Parameters.AddWithValue("@p2", nextNeighbor);
-            GetExistingScores(nextNeighbor, parentX);
-            parentX++;
-
-            nextNeighbor = nextNeighbor + neighborhood;
-            if (nextNeighbor >= GlobalVar.popCount)
-                nextNeighbor = (nextNeighbor - GlobalVar.popCount)+1;
-//            getCommand.Parameters.AddWithValue("@p3", nextNeighbor);
-            GetExistingScores(nextNeighbor, parentX);
-            parentX++;
-
-            nextNeighbor = nextNeighbor + neighborhood;
-            if (nextNeighbor >= GlobalVar.popCount)
-                nextNeighbor = (nextNeighbor - GlobalVar.popCount)+1;
-//            getCommand.Parameters.AddWithValue("@p4", nextNeighbor);
-            GetExistingScores(nextNeighbor, parentX);
-            parentX++;
-
-            nextNeighbor = nextNeighbor + neighborhood;
-            if (nextNeighbor >= GlobalVar.popCount)
-                nextNeighbor = (nextNeighbor - GlobalVar.popCount)+1;
-//            getCommand.Parameters.AddWithValue("@p5", nextNeighbor);
-            GetExistingScores(nextNeighbor, parentX);
+            for (int nx = 0; nx < 10; nx++)
+            {
+                nextNeighbor = nextNeighbor + neighborhood;
+                if (nextNeighbor >= GlobalVar.popCount)
+                    nextNeighbor = (nextNeighbor - GlobalVar.popCount) + 1;
+                GetExistingScores(nextNeighbor, parentX);
+                parentX++;
+            }
 
             long bestScore = 0; 
             int fIndex = 0;
-            for (int i = 0; i < scoreFrames; i++)
+            for (int i = 0; i < scoreFrames / 4; i++)
+             // dsm   for (int i = 0; i < GlobalVar.featureCount/4; i++)
             {
                 // get parents based on feature/frame
 
                 xP1 = 0;
                 bestScore = GlobalVar.frameScore[xP1, i];
-                for (int px = 1; px < 6; px++)
+                for (int px = 1; px < 11; px++)
                 {
                     if ((GlobalVar.frameScore[px, i] > GlobalVar.frameScore[xP1, i]) && (GlobalVar.frameScore[px, i] > 0))
                     {
@@ -1007,7 +900,7 @@ namespace as_get
 
                 xP2 = 0;
                 bestScore = GlobalVar.frameScore[xP2, i];
-                for (int px = 6; px < 11; px++)
+                for (int px = 11; px < 21; px++)
                 {
                     if ((GlobalVar.frameScore[px, i] > GlobalVar.frameScore[xP2, i]) && (GlobalVar.frameScore[px, i] > 0))
                     {
@@ -1017,15 +910,13 @@ namespace as_get
                 }
 
 
-//                Console.WriteLine(i.ToString() + " " + parentIndex.ToString() + " " +
-//                    GlobalVar.frameScore[parentIndex, i].ToString());
-                for (int fx = 0; fx < (GlobalVar.featureCount / scoreFrames); fx++)
+                for (int fx = 0; fx < 4; fx++)
                 {
                     parentIndex = xP1;
-                    if ((GlobalVar.random.Next(0, 100) < 50)) // - random no crossover
+                    if ((GlobalVar.random.Next(0, 100) < 50)) 
                         parentIndex = xP2;
                     GlobalVar.features[fIndex, 0] = GlobalVar.features[fIndex, parentIndex];
-                    if ((GlobalVar.frameScore[parentIndex, i] < 0))
+                    if ((GlobalVar.frameScore[parentIndex, i] < 1))
                     {
                         GlobalVar.features[fIndex, 0] = GlobalVar.random.Next(0, 255);
                     }
@@ -1034,7 +925,6 @@ namespace as_get
             }
 
             // mutate here
-            // move mutation to be after crossover (don't want to mutate all potential parents)
             for (int i = 0; i < GlobalVar.featureCount; i++)
             {
                     if (GlobalVar.random.Next(0, (GlobalVar.featureCount * 100)) < GlobalVar.MutPer100Members)
