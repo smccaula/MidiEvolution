@@ -14,7 +14,7 @@ namespace as_get
 {
     class as_get
     {
-        const int scoreFrames = 8;
+        const int scoreFrames = 1;
         public static class GlobalVar
         {
             public static int popCount = 0;
@@ -29,8 +29,8 @@ namespace as_get
             public static int myUniqueID = 0;
             public static long bestScore = -999999999;
             public static int MutPer100Members = 100;
-            public static int normalMut = 50;
-            public static int alternateMut = 300;
+            public static int normalMut = 25;
+            public static int alternateMut = 100;
             public static int xoverType = 0; 
             public static int parentDist = 20;
             public static long[,] frameScore = new long[11,scoreFrames];
@@ -158,7 +158,7 @@ namespace as_get
                         " set member_score = @parmScore " +
                         " where job_name = @parmJob and population_index = @parmPop and member_index = @parmMember ", myConnection);
 
-                    GlobalVar.myGeneration++;
+                //    GlobalVar.myGeneration++;
                     preupdateCommand.Parameters.AddWithValue("@parmScore", -1);
                     preupdateCommand.Parameters.AddWithValue("@parmJob", GlobalVar.jobName);
                     preupdateCommand.Parameters.AddWithValue("@parmPop", GlobalVar.popIndex);
@@ -464,7 +464,7 @@ namespace as_get
             insertCommand.Parameters.AddWithValue("@parmTop", GlobalVar.bestScore);
 //            insertCommand.Parameters.AddWithValue("@parmPossible", 515886062); //blue
 //            insertCommand.Parameters.AddWithValue("@parmPossible", 820278363); //sine
-            insertCommand.Parameters.AddWithValue("@parmPossible", 1054369613); //short
+            insertCommand.Parameters.AddWithValue("@parmPossible", 1034921354); //short
             //    insertCommand.Parameters.AddWithValue("@parmPossible", (GlobalVar.featureCount*8));
             try
             {
@@ -726,9 +726,9 @@ namespace as_get
 
                 for (int i = 0; i < GlobalVar.featureCount; i++)
                 {
-                    newIntValue = GlobalVar.random.Next(featureIntMin, featureIntMax);
-                    GlobalVar.features[i, 0] = newIntValue;
-//                    GlobalVar.features[i, 0] = 0; // dsm experiment start with zero
+//                    newIntValue = GlobalVar.random.Next(featureIntMin, featureIntMax);
+//                    GlobalVar.features[i, 0] = newIntValue;
+                    GlobalVar.features[i, 0] = 0; // dsm experiment start with zero
                 }
 
                 for (int i = 0; i < GlobalVar.featureCount; i++)
@@ -875,10 +875,10 @@ namespace as_get
 
                 xP1 = 0;
                 bestScore = GlobalVar.frameScore[xP1, i];
-                if (bestScore < 0) bestScore = 0;
+//                if (bestScore < 0) bestScore = 0;
                 for (int px = 1; px < 6; px++)
                 {
-                    if ((GlobalVar.frameScore[px, i] > GlobalVar.frameScore[xP1, i]) && (GlobalVar.frameScore[px, i] > 0))
+                    if ((GlobalVar.frameScore[px, i] >= GlobalVar.frameScore[xP1, i]))
                     {
                         xP1 = px;
                         bestScore = GlobalVar.frameScore[xP1, i];
@@ -887,28 +887,28 @@ namespace as_get
 
                 xP2 = 0;
                 bestScore = GlobalVar.frameScore[xP2, i];
-                if (bestScore < 0) bestScore = 0;
+//                if (bestScore < 0) bestScore = 0;
                 for (int px = 6; px < 11; px++)
                 {
-                    if ((GlobalVar.frameScore[px, i] > GlobalVar.frameScore[xP2, i]) && (GlobalVar.frameScore[px, i] > 0))
+                    if ((GlobalVar.frameScore[px, i] >= GlobalVar.frameScore[xP2, i]))
                     {
                         xP2 = px;
                         bestScore = GlobalVar.frameScore[xP2, i];
                     }
                 }
 
+                int frameSize = (GlobalVar.featureCount / scoreFrames);
 
-                for (int fx = 0; fx < 4; fx++)
+                for (int fx = 0; fx < frameSize; fx++)
                 {
-                    parentIndex = xP1;
-                    if ((GlobalVar.random.Next(0, 100) < 50)) // - random no crossover
-                        parentIndex = xP2;
-                    GlobalVar.features[fIndex, 0] = GlobalVar.features[fIndex, parentIndex];
-                    if ((GlobalVar.frameScore[parentIndex, i] < 0))
+                    if (fIndex < GlobalVar.featureCount)
                     {
-                        GlobalVar.features[fIndex, 0] = GlobalVar.random.Next(0, 255);
+                        parentIndex = xP1;
+                        if ((GlobalVar.random.Next(0, 100) < 50)) // - random no crossover
+                            parentIndex = xP2;
+                        GlobalVar.features[fIndex, 0] = GlobalVar.features[fIndex, parentIndex];
+                        fIndex++;
                     }
-                    fIndex++;
                 }
             }
 

@@ -14,7 +14,7 @@ namespace as_rtcmix
 {
     class as_rtcmix
     {
-        const int bytesPerEvent = 7;
+        const int bytesPerEvent = 4;
         const double samplesSecond = 44100.0;
         const int maxSamples = 44100 * 30; // 30 seconds max
         const int scoreFrames = 8;
@@ -22,7 +22,7 @@ namespace as_rtcmix
         public static class GlobalVar
         {
             public static int endTime = 0;
-            public static int eventsThisRun = 500;
+            public static int eventsThisRun = 64;
             public static int featureCount = (bytesPerEvent * eventsThisRun);
             public static int[] features = new int[350000];
             public static int[] copyFeatures = new int[350000];
@@ -68,17 +68,26 @@ namespace as_rtcmix
             public static long worstScore = 0;
             public static int worstNDX = 0;
             public static long worstFrame = 0;
-            public static long potentialDiff = 0;
+            public static long totalDiff = 0;
+            public static long[] potentialDiff = new long[scoreFrames];
             public static int lastLength = 0;
             public static int mostSamples = 0;
             public static bool allFrames = false;
             public static int startFrame = 0;
             public static int waveCount = 0;
-            public static int nonZeroCtr = 0;
+            public static double[] freqLookup = new double[256 * 256];
         }
 
         static void Main(string[] args)
         {
+
+            double freqInterval = 1.041666667;
+
+            GlobalVar.freqLookup[0] = 13.75;
+            for (int i = 1; i < (256); i++)
+            {
+                GlobalVar.freqLookup[i] = GlobalVar.freqLookup[i - 1] * freqInterval;
+            }
 
             string XMLfile = "test89.xml";
             GlobalVar.targetWav = openWav("target.wav");
@@ -100,21 +109,20 @@ namespace as_rtcmix
 
                 while (!processSuccess)
                 {
-                GlobalVar.nonZeroCtr = 0;
                     processSuccess = PreProcess(XMLfile);
                 if (!processSuccess)
                 {
-                    Console.WriteLine("retry " + processTry.ToString() + " nz-" + GlobalVar.nonZeroCtr.ToString() + " wc-"
-                        + GlobalVar.waveCount.ToString() + " pop-"  
-                        + GlobalVar.popMember.ToString() + " gen-" +  GlobalVar.myGeneration.ToString() + " sco-" 
-                        + GlobalVar.myScore.ToString());
+ //                   Console.WriteLine("retry " + processTry.ToString() + " wc-"
+ //                       + GlobalVar.waveCount.ToString() + " pop-"  
+ //                       + GlobalVar.popMember.ToString() + " gen-" +  GlobalVar.myGeneration.ToString() + " sco-" 
+ //                       + GlobalVar.myScore.ToString());
                     System.Threading.Thread.Sleep(1000);
                 }
                 processTry++;
-                    if (processTry > 5)
+                    if (processTry > 2)
                     {
                     // error recovery routines
-                    Console.WriteLine("quitting");
+ //                   Console.WriteLine("quitting");
                         return;
                     }
 
@@ -136,7 +144,9 @@ namespace as_rtcmix
             buildChars = new char[350000];
 
             for (int i = 0; i < GlobalVar.featureCount; i++)
-                buildChars[i] = (char)GlobalVar.copyFeatures[i];
+            {
+                buildChars[i] = (char)GlobalVar.features[i];
+            }
 
             string bs = new string(buildChars);
             bs = bs.Substring(0, GlobalVar.featureCount);
@@ -152,25 +162,30 @@ namespace as_rtcmix
 
             if (!GetExistingCharacteristics(GlobalVar.popMember))
             {
-                Console.WriteLine("input error");
+          //      Console.WriteLine("input error");
                 return(false);
-            }
-
-            if (GlobalVar.nonZeroCtr < (GlobalVar.featureCount / 2))
-            {
-                Console.WriteLine("missing input");
-                return (false);
             }
 
             for (int i = 0; i < GlobalVar.samples; i++)
             {
                 GlobalVar.sampleDiff[i] = (Math.Abs(GlobalVar.targetWav[i]));
-                GlobalVar.potentialDiff = GlobalVar.potentialDiff + GlobalVar.sampleDiff[i] + (8 * 1024);  // worst is mirror
+                GlobalVar.totalDiff = GlobalVar.totalDiff + GlobalVar.sampleDiff[i];  // worst is silence
+            }
+
+            for (int fx = 0; fx < scoreFrames; fx++)
+            {
+                GlobalVar.potentialDiff[fx] = 0;
+                int startX = fx * (GlobalVar.samples / scoreFrames);
+                int endX = startX + (GlobalVar.samples / scoreFrames);
+                for (int sx = startX; sx < endX; sx++)
+                {
+                    GlobalVar.potentialDiff[fx] = GlobalVar.potentialDiff[fx] + Math.Abs(GlobalVar.targetWav[sx]);
+                }
             }
 
             if (!BuildScoreFile())
             {
-                Console.WriteLine("CMIX file error " + GlobalVar.waveCount);
+    //            Console.WriteLine("CMIX file error " + GlobalVar.waveCount);
                 return(false);
             }
 
@@ -178,16 +193,16 @@ namespace as_rtcmix
 
             if (!RenderScoreToWav())
             {
-                Console.WriteLine("CMIX wav error " + GlobalVar.waveCount);
+       //         Console.WriteLine("CMIX wav error " + GlobalVar.waveCount);
                 return(false);
             }
 
             // at this point I have both wav files, and the rest of the process should be identical
 
 
-            GlobalVar.myScore = (GlobalVar.potentialDiff - AlternateScore(0, GlobalVar.samples));
-            Console.WriteLine("myScore: " + GlobalVar.myScore + " " + GlobalVar.waveCount + " " + GlobalVar.samples + " " + GlobalVar.potentialDiff
-                + " pop-"  + GlobalVar.popMember.ToString() + " gen-" + GlobalVar.myGeneration.ToString());
+            GlobalVar.myScore = (GlobalVar.totalDiff - AlternateScore(0, GlobalVar.samples));
+//            Console.WriteLine("myScore: " + GlobalVar.myScore + " wc:" + GlobalVar.waveCount + " gs:" + GlobalVar.samples + " pd:" + GlobalVar.totalDiff
+//                + " pop-"  + GlobalVar.popMember.ToString() + " gen-" + GlobalVar.myGeneration.ToString());
 
             return (true);
         }
@@ -208,7 +223,7 @@ namespace as_rtcmix
 
             StreamWriter scoreText = new StreamWriter(scoreFile);
             scoreText.WriteLine("set_option(\"audio = off\", \"clobber = on\")");
-            scoreText.WriteLine("rtsetparams(44100, 2)");
+            scoreText.WriteLine("rtsetparams(44100, 1)");
             scoreText.WriteLine("rtoutput(\"" + wavFile + "\")");
             scoreText.WriteLine("reset(44100)");
             scoreText.WriteLine("load(\"WAVETABLE\")");
@@ -239,23 +254,23 @@ namespace as_rtcmix
       //          Console.WriteLine("times : " + Convert.ToString(tempLength) + " " +
       //              Convert.ToString(tempStart) + " " + Convert.ToString(tempOffset));
 
-                tempStart = tempStart + tempOffset;
+      //          tempStart = tempStart + tempOffset;
 
 
-                tempDur = GlobalVar.CMIXdur[eventX] * 0.25;
-                tempFreq = GlobalVar.CMIXfreq[eventX] * 20000.00;
-                tempPan = GlobalVar.CMIXpan[eventX];
+                tempDur = GlobalVar.CMIXdur[eventX] * 1.0;
+                tempFreq = GlobalVar.freqLookup[GlobalVar.CMIXfreq[eventX]];
+                tempPan = 0;
 
-                if ((tempStart > 0) && (tempDur > 0) && (tempFreq > 0))
-                {
+          //      if ((tempStart > 0) && (tempDur > 0) && (tempFreq > 0))
+          //      {
                     GlobalVar.waveCount++;
                     scoreText.WriteLine("WAVETABLE("
                         + Convert.ToString(tempStart) + "," // 0.00 to end time (1 bytes)
-                        + Convert.ToString(tempDur / 256.00) + "," // 0.00 to 0.25 (1 byte)
-                        + Convert.ToString((GlobalVar.CMIXamp[eventX] * 1024) / (256 * 256)) + "," // 0 to ... (2 bytes)
-                        + Convert.ToString(tempFreq / (256.00 * 256.00)) + "," // 0 to 20,500 (2 bytes)
-                        + Convert.ToString(tempPan / 256.00) + ",wavet)"); // 0.00 to 1.00 (1 byte)
-                }
+                        + Convert.ToString(tempDur / 255.00) + "," // 0.00 to 0.25 (1 byte)
+                        + Convert.ToString((GlobalVar.CMIXamp[eventX] * 16384) / (256)) + "," // 0 to ... (2 bytes)
+                        + Convert.ToString(tempFreq) + "," // 0 to 20,500 (2 bytes)
+                        + Convert.ToString(tempPan) + ",wavet)"); // 0.00 (mono)
+          //      }
 
                 eventX++;
                 if (eventX == GlobalVar.eventsThisRun) MoreEvents = false;
@@ -418,7 +433,10 @@ namespace as_rtcmix
             {
                 int startX = fx * (GlobalVar.samples / scoreFrames);
                 int endX = startX + (GlobalVar.samples / scoreFrames);
-                GlobalVar.frameScore[fx] = (GlobalVar.potentialDiff / scoreFrames) - AlternateScore(startX, endX);
+                GlobalVar.frameScore[fx] = GlobalVar.potentialDiff[fx] - AlternateScore(startX, endX);
+                if (GlobalVar.frameScore[fx] > 0)
+                    Console.WriteLine("positive frame! " + GlobalVar.popMember.ToString() + " " 
+                        + GlobalVar.myGeneration.ToString() + " " + GlobalVar.frameScore[fx].ToString());
                 scoreFile.Write(Convert.ToInt32(GlobalVar.frameScore[fx]));
             }
             scoreFile.Close();
@@ -612,8 +630,6 @@ namespace as_rtcmix
                 for (int i = 0; i < GlobalVar.featureCount; i++)
                 {
                     GlobalVar.features[i] = buildChars[i];
-                    if (GlobalVar.features[i] != 0)
-                        GlobalVar.nonZeroCtr++;
                     if (GlobalVar.features[i] > 255)
                         GlobalVar.features[i] = 255;
                     if (GlobalVar.features[i] < 0)
@@ -639,9 +655,9 @@ namespace as_rtcmix
             {
                 GlobalVar.CMIXstart[i] = GlobalVar.features[(i * CMIXSize)];
                 GlobalVar.CMIXdur[i] = GlobalVar.features[1 + (i * CMIXSize)];
-                GlobalVar.CMIXamp[i] = GlobalVar.features[2 + (i * CMIXSize)] + (256 * GlobalVar.features[3 + (i * CMIXSize)]);
-                GlobalVar.CMIXfreq[i] = GlobalVar.features[4 + (i * CMIXSize)] + (256 * GlobalVar.features[5 + (i * CMIXSize)]);
-                GlobalVar.CMIXpan[i] = GlobalVar.features[6 + (i * CMIXSize)];
+                GlobalVar.CMIXamp[i] = GlobalVar.features[2 + (i * CMIXSize)];
+                GlobalVar.CMIXfreq[i] = GlobalVar.features[3 + (i * CMIXSize)];
+        //        GlobalVar.CMIXpan[i] = GlobalVar.features[4 + (i * CMIXSize)];
             }
         }
 
@@ -695,20 +711,7 @@ namespace as_rtcmix
                 GlobalVar.samples = (wavSize / 2);     // more accurate, get actual chunk size
                 GlobalVar.endTime = (Convert.ToInt32((GlobalVar.samples / samplesSecond) * 1000)) / 1;
             }
-
-            int genSamples = 0;
-            if (GlobalVar.samples > 0)
-            {
-                genSamples = wavSize / 2;
-            }
-
-            if (genSamples < 0.8 * GlobalVar.samples)
-            {
-                GlobalVar.wavErr = true;
-                return null;
-            }
-
-
+             int   genSamples = wavSize / 2;
 
  //           Console.WriteLine("samples: " + GlobalVar.samples);
 
