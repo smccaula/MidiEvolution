@@ -14,7 +14,7 @@ namespace as_get
 {
     class as_get
     {
-        const int scoreFrames = 1;
+        const int scoreFrames = 8;
         public static class GlobalVar
         {
             public static int popCount = 0;
@@ -29,8 +29,8 @@ namespace as_get
             public static int myUniqueID = 0;
             public static long bestScore = -999999999;
             public static int MutPer100Members = 100;
-            public static int normalMut = 25;
-            public static int alternateMut = 100;
+            public static int normalMut = 50;
+            public static int alternateMut = 300;
             public static int xoverType = 0; 
             public static int parentDist = 20;
             public static long[,] frameScore = new long[11,scoreFrames];
@@ -464,7 +464,7 @@ namespace as_get
             insertCommand.Parameters.AddWithValue("@parmTop", GlobalVar.bestScore);
 //            insertCommand.Parameters.AddWithValue("@parmPossible", 515886062); //blue
 //            insertCommand.Parameters.AddWithValue("@parmPossible", 820278363); //sine
-            insertCommand.Parameters.AddWithValue("@parmPossible", 1034921354); //short
+            insertCommand.Parameters.AddWithValue("@parmPossible", 713636118); //short
             //    insertCommand.Parameters.AddWithValue("@parmPossible", (GlobalVar.featureCount*8));
             try
             {
@@ -726,9 +726,9 @@ namespace as_get
 
                 for (int i = 0; i < GlobalVar.featureCount; i++)
                 {
-//                    newIntValue = GlobalVar.random.Next(featureIntMin, featureIntMax);
-//                    GlobalVar.features[i, 0] = newIntValue;
-                    GlobalVar.features[i, 0] = 0; // dsm experiment start with zero
+                    newIntValue = GlobalVar.random.Next(featureIntMin, featureIntMax);
+                    GlobalVar.features[i, 0] = newIntValue;
+//                    GlobalVar.features[i, 0] = 0; // dsm experiment start with zero
                 }
 
                 for (int i = 0; i < GlobalVar.featureCount; i++)
