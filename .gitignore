@@ -215,3 +215,10 @@ FakesAssemblies/
 **/*.Server/GeneratedArtifacts
 **/*.Server/ModelManifest.xml
 _Pvt_Extensions
+*.txt
+*.exe
+*.txt
+as_compare/bin/Debug/as_compare.pdb
+*.exe
+*.txt
+*.exe
