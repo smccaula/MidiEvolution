@@ -222,3 +222,9 @@ as_compare/bin/Debug/as_compare.pdb
 *.exe
 *.txt
 *.exe
+*.exe
+as_net/obj/x86/Debug/as_net.csproj.FileListAbsolute.txt
+*.pdb
+as_solution/obj/x86/Debug/as_solution.csproj.FileListAbsolute.txt
+as_compare/obj/x86/Debug/as_compare.csproj.FileListAbsolute.txt
+test_mysql/obj/x86/Debug/test_mysql.pdb
