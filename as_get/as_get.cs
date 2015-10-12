@@ -832,6 +832,11 @@ namespace as_get
                 }
             }
 
+            for (int fx = 0; fx < (scoreFrames-1); fx++)
+            {
+                GlobalVar.frameScore[parent, fx] = GlobalVar.frameScore[parent, fx] + GlobalVar.frameScore[parent, fx+1];
+            }
+
             GetExistingCharacteristics(popMember, parent);
         }
 

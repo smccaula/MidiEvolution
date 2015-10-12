@@ -14,7 +14,7 @@ namespace as_rtcmix
 {
     class as_rtcmix
     {
-        const int bytesPerEvent = 4;
+        const int bytesPerEvent = 6;
         const double samplesSecond = 44100.0;
         const int maxSamples = 44100 * 30; // 30 seconds max
         const int scoreFrames = 8;
@@ -80,10 +80,11 @@ namespace as_rtcmix
         static void Main(string[] args)
         {
 
-            double freqInterval = 1.027777778;
+//            double freqInterval = 1.027777778;
+            double freqInterval = 1.0014451;
 
-            GlobalVar.freqLookup[0] = 13.75;
-            for (int i = 1; i < (256); i++)
+            GlobalVar.freqLookup[0] = 27.5;
+            for (int i = 1; i < (256 * 16); i++)
             {
                 GlobalVar.freqLookup[i] = GlobalVar.freqLookup[i - 1] * freqInterval;
             }
@@ -228,6 +229,7 @@ namespace as_rtcmix
 
             bool MoreEvents = true;
             int eventX = 0;
+            int freqNDX = 0;
             double tempStart = 0.0;
             double tempLength = 0.0;
             double tempOffset = 0.0;
@@ -254,11 +256,19 @@ namespace as_rtcmix
 
 
                 tempDur = GlobalVar.CMIXdur[eventX] * 1.0;
-                tempFreq = GlobalVar.freqLookup[GlobalVar.CMIXfreq[eventX]];
-                tempAmp = (GlobalVar.CMIXamp[eventX] * 1024) / 256; // dsm too coarse?
+                freqNDX = GlobalVar.CMIXfreq[eventX];
+                if (freqNDX > 32767) freqNDX = freqNDX - 32768;
+                if (freqNDX > 16383) freqNDX = freqNDX - 16384;
+                if (freqNDX > 8191) freqNDX = freqNDX - 8192;
+                if (freqNDX > 4095) freqNDX = freqNDX - 4096;
+                tempFreq = GlobalVar.freqLookup[freqNDX];
+                tempAmp = GlobalVar.CMIXamp[eventX]; // dsm too coarse?
+                if (tempAmp > 32767) tempAmp = tempAmp - 32768;
+                if (tempAmp > 16383) tempAmp = tempAmp - 16384;
+
                 tempPan = 0;
 
-                if ((tempAmp > 0) && (tempDur > 0))
+                if ((tempAmp > 0) && (tempDur > 0) && (tempFreq > 0))
                 {
                     scoreText.WriteLine("WAVETABLE("
                         + Convert.ToString(tempStart) + "," // 0.00 to end time (1 bytes)
@@ -657,8 +667,8 @@ namespace as_rtcmix
             {
                 GlobalVar.CMIXstart[i] = GlobalVar.features[(i * CMIXSize)];
                 GlobalVar.CMIXdur[i] = GlobalVar.features[1 + (i * CMIXSize)];
-                GlobalVar.CMIXamp[i] = GlobalVar.features[2 + (i * CMIXSize)];
-                GlobalVar.CMIXfreq[i] = GlobalVar.features[3 + (i * CMIXSize)];
+                GlobalVar.CMIXamp[i] = GlobalVar.features[2 + (i * CMIXSize)] + (256 * GlobalVar.features[3 + (i * CMIXSize)]);
+                GlobalVar.CMIXfreq[i] = GlobalVar.features[4 + (i * CMIXSize)] + (256 * GlobalVar.features[5 + (i * CMIXSize)]);
         //        GlobalVar.CMIXpan[i] = GlobalVar.features[4 + (i * CMIXSize)];
             }
         }
