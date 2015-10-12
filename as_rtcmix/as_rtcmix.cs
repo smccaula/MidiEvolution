@@ -14,7 +14,7 @@ namespace as_rtcmix
 {
     class as_rtcmix
     {
-        const int bytesPerEvent = 6;
+        const int bytesPerEvent = 4;
         const double samplesSecond = 44100.0;
         const int maxSamples = 44100 * 30; // 30 seconds max
         const int scoreFrames = 8;
@@ -80,11 +80,10 @@ namespace as_rtcmix
         static void Main(string[] args)
         {
 
-//            double freqInterval = 1.027777778;
-            double freqInterval = 1.0014451;
+            double freqInterval = 1.027777778;
 
-            GlobalVar.freqLookup[0] = 27.5;
-            for (int i = 1; i < (256 * 16); i++)
+            GlobalVar.freqLookup[0] = 13.75;
+            for (int i = 1; i < (256); i++)
             {
                 GlobalVar.freqLookup[i] = GlobalVar.freqLookup[i - 1] * freqInterval;
             }
@@ -104,32 +103,32 @@ namespace as_rtcmix
                 return;
             }
 
-                bool processSuccess = false;
-                int processTry = 0;
+            bool processSuccess = false;
+            int processTry = 0;
 
-                while (!processSuccess)
-                {
-                    processSuccess = PreProcess(XMLfile);
+            while (!processSuccess)
+            {
+                processSuccess = PreProcess(XMLfile);
                 if (!processSuccess)
                 {
- //                   Console.WriteLine("retry " + processTry.ToString() + " wc-"
- //                       + GlobalVar.popMember.ToString() + " gen-" +  GlobalVar.myGeneration.ToString() + " sco-" 
- //                       + GlobalVar.myScore.ToString());
+                    //                   Console.WriteLine("retry " + processTry.ToString() + " wc-"
+                    //                       + GlobalVar.popMember.ToString() + " gen-" +  GlobalVar.myGeneration.ToString() + " sco-" 
+                    //                       + GlobalVar.myScore.ToString());
                     System.Threading.Thread.Sleep(1000);
                 }
                 processTry++;
-                    if (processTry > 2)
-                    {
+                if (processTry > 2)
+                {
                     // error recovery routines
- //                   Console.WriteLine("quitting");
-                        return;
-                    }
-
+                    //                   Console.WriteLine("quitting");
+                    return;
                 }
+
+            }
             OutputAllFiles(XMLfile);
         }
 
-        static  void OutputAllFiles(string XMLfile)
+        static void OutputAllFiles(string XMLfile)
         {
             // write sx, mx and xml files, only on successful completion of process
             WriteScoreFile();
@@ -161,8 +160,8 @@ namespace as_rtcmix
 
             if (!GetExistingCharacteristics(GlobalVar.popMember))
             {
-          //      Console.WriteLine("input error");
-                return(false);
+                //      Console.WriteLine("input error");
+                return (false);
             }
 
             for (int i = 0; i < GlobalVar.samples; i++)
@@ -184,22 +183,22 @@ namespace as_rtcmix
 
             if (!BuildScoreFile())
             {
-                return(false);
+                return (false);
             }
 
 
 
             if (!RenderScoreToWav())
             {
-                return(false);
+                return (false);
             }
 
             // at this point I have both wav files, and the rest of the process should be identical
 
 
             GlobalVar.myScore = (GlobalVar.totalDiff - AlternateScore(0, GlobalVar.samples));
-//            Console.WriteLine("myScore: " + GlobalVar.myScore + " gs:" + GlobalVar.samples + " td:" + GlobalVar.totalDiff
-//                + " pop-"  + GlobalVar.popMember.ToString() + " gen-" + GlobalVar.myGeneration.ToString());
+            //            Console.WriteLine("myScore: " + GlobalVar.myScore + " gs:" + GlobalVar.samples + " td:" + GlobalVar.totalDiff
+            //                + " pop-"  + GlobalVar.popMember.ToString() + " gen-" + GlobalVar.myGeneration.ToString());
 
             return (true);
         }
@@ -229,7 +228,6 @@ namespace as_rtcmix
 
             bool MoreEvents = true;
             int eventX = 0;
-            int freqNDX = 0;
             double tempStart = 0.0;
             double tempLength = 0.0;
             double tempOffset = 0.0;
@@ -246,29 +244,21 @@ namespace as_rtcmix
                 //                tempStart = (eventX * GlobalVar.endTime) / GlobalVar.eventsThisRun;
                 tempLength = (Convert.ToDouble((GlobalVar.samples / samplesSecond)));
                 tempStart = (eventX * tempLength) / GlobalVar.eventsThisRun;
-            //    tempStart = eventX / GlobalVar.eventsThisRun;
+                //    tempStart = eventX / GlobalVar.eventsThisRun;
                 tempOffset = (GlobalVar.CMIXstart[eventX]) / 4096.0;
 
-      //          Console.WriteLine("times : " + Convert.ToString(tempLength) + " " +
-     //               Convert.ToString(tempStart) + " " + Convert.ToString(tempOffset));
+                //          Console.WriteLine("times : " + Convert.ToString(tempLength) + " " +
+                //               Convert.ToString(tempStart) + " " + Convert.ToString(tempOffset));
 
                 tempStart = tempStart + tempOffset;
 
 
                 tempDur = GlobalVar.CMIXdur[eventX] * 1.0;
-                freqNDX = GlobalVar.CMIXfreq[eventX];
-                if (freqNDX > 32767) freqNDX = freqNDX - 32768;
-                if (freqNDX > 16383) freqNDX = freqNDX - 16384;
-                if (freqNDX > 8191) freqNDX = freqNDX - 8192;
-                if (freqNDX > 4095) freqNDX = freqNDX - 4096;
-                tempFreq = GlobalVar.freqLookup[freqNDX];
-                tempAmp = GlobalVar.CMIXamp[eventX]; // dsm too coarse?
-                if (tempAmp > 32767) tempAmp = tempAmp - 32768;
-                if (tempAmp > 16383) tempAmp = tempAmp - 16384;
-
+                tempFreq = GlobalVar.freqLookup[GlobalVar.CMIXfreq[eventX]];
+                tempAmp = (GlobalVar.CMIXamp[eventX] * 1024) / 256; // dsm too coarse?
                 tempPan = 0;
 
-                if ((tempAmp > 0) && (tempDur > 0) && (tempFreq > 0))
+                if ((tempAmp > 0) && (tempDur > 0))
                 {
                     scoreText.WriteLine("WAVETABLE("
                         + Convert.ToString(tempStart) + "," // 0.00 to end time (1 bytes)
@@ -321,7 +311,7 @@ namespace as_rtcmix
 
             if (GlobalVar.wavErr)
             {
-                return(false);
+                return (false);
             }
 
             return (true);
@@ -667,9 +657,9 @@ namespace as_rtcmix
             {
                 GlobalVar.CMIXstart[i] = GlobalVar.features[(i * CMIXSize)];
                 GlobalVar.CMIXdur[i] = GlobalVar.features[1 + (i * CMIXSize)];
-                GlobalVar.CMIXamp[i] = GlobalVar.features[2 + (i * CMIXSize)] + (256 * GlobalVar.features[3 + (i * CMIXSize)]);
-                GlobalVar.CMIXfreq[i] = GlobalVar.features[4 + (i * CMIXSize)] + (256 * GlobalVar.features[5 + (i * CMIXSize)]);
-        //        GlobalVar.CMIXpan[i] = GlobalVar.features[4 + (i * CMIXSize)];
+                GlobalVar.CMIXamp[i] = GlobalVar.features[2 + (i * CMIXSize)];
+                GlobalVar.CMIXfreq[i] = GlobalVar.features[3 + (i * CMIXSize)];
+                //        GlobalVar.CMIXpan[i] = GlobalVar.features[4 + (i * CMIXSize)];
             }
         }
 
@@ -723,14 +713,14 @@ namespace as_rtcmix
                 GlobalVar.samples = (wavSize / 2);     // more accurate, get actual chunk size
                 GlobalVar.endTime = (Convert.ToInt32((GlobalVar.samples / samplesSecond) * 1000)) / 1;
             }
-             int   genSamples = wavSize / 2;
+            int genSamples = wavSize / 2;
 
- //           Console.WriteLine("samples: " + GlobalVar.samples);
+            //           Console.WriteLine("samples: " + GlobalVar.samples);
 
             // here can set frame size etc.
 
-      //      GlobalVar.eventsThisRun = 960;
-       //     GlobalVar.featureCount = (8 * GlobalVar.eventsThisRun);
+            //      GlobalVar.eventsThisRun = 960;
+            //     GlobalVar.featureCount = (8 * GlobalVar.eventsThisRun);
 
             wavArray = new long[GlobalVar.samples];
 

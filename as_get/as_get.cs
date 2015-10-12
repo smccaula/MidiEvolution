@@ -23,7 +23,7 @@ namespace as_get
             public static int myGeneration = 0;
             public static long myScore = 0;
             public static Random random = new Random();
-            public static int[,] features = new int[150000,11];
+            public static int[,] features = new int[150000, 11];
             public static int featureCount = 0;
             public static int launchGeneration = 0;
             public static int myUniqueID = 0;
@@ -31,9 +31,9 @@ namespace as_get
             public static int MutPer100Members = 100;
             public static int normalMut = 50;
             public static int alternateMut = 300;
-            public static int xoverType = 0; 
+            public static int xoverType = 0;
             public static int parentDist = 20;
-            public static long[,] frameScore = new long[11,scoreFrames];
+            public static long[,] frameScore = new long[11, scoreFrames];
         }
 
         static void Main(string[] args)
@@ -47,7 +47,7 @@ namespace as_get
             string jobType = null;
             string XMLfile = "";
 
- 
+
 
             // get input parameters for job name and iteration count
 
@@ -71,7 +71,7 @@ namespace as_get
                 GlobalVar.launchGeneration = Convert.ToInt32(args[3]);
             }
 
-      //      GlobalVar.launchGeneration = 17;
+            //      GlobalVar.launchGeneration = 17;
 
             // establish SQL connection in main procedure, it will be passed to other procedures
 
@@ -102,7 +102,7 @@ namespace as_get
             // check job_table that: job exists, users is authorized, save job type
 
             jobType = "GA";
-            if (GlobalVar.launchGeneration < 1) 
+            if (GlobalVar.launchGeneration < 1)
                 jobType = TestJobValidity(ref myConnection);
 
             if (String.IsNullOrEmpty(jobType))
@@ -111,8 +111,8 @@ namespace as_get
                 return;
             }
 
-   //         Console.WriteLine("GetJobParameters"); // not doing anything
-   //         GetJobParameters(ref myConnection);
+            //         Console.WriteLine("GetJobParameters"); // not doing anything
+            //         GetJobParameters(ref myConnection);
 
             // okay, have a valid job.  does it have multiple populations?  which one is active?
 
@@ -123,7 +123,7 @@ namespace as_get
             }
 
             GlobalVar.featureCount = GetFeatureCount(ref myConnection);
-            if (GlobalVar.featureCount < 1) 
+            if (GlobalVar.featureCount < 1)
             {
                 Console.WriteLine("job contains no feature(s) - cancelling");
                 return;
@@ -138,15 +138,15 @@ namespace as_get
             {
                 //        GlobalVar.featureCount = 0;
 
-                    try
-                    {
-                        myPopNumber = GetMemberToProcess(ref myConnection);
-                    }
-                    catch
-                    {
-                        return; 
-                    }
- 
+                try
+                {
+                    myPopNumber = GetMemberToProcess(ref myConnection);
+                }
+                catch
+                {
+                    return;
+                }
+
 
                 if (myPopNumber < 1)
                     return;
@@ -158,7 +158,7 @@ namespace as_get
                         " set member_score = @parmScore " +
                         " where job_name = @parmJob and population_index = @parmPop and member_index = @parmMember ", myConnection);
 
-                //    GlobalVar.myGeneration++;
+                    //    GlobalVar.myGeneration++;
                     preupdateCommand.Parameters.AddWithValue("@parmScore", -1);
                     preupdateCommand.Parameters.AddWithValue("@parmJob", GlobalVar.jobName);
                     preupdateCommand.Parameters.AddWithValue("@parmPop", GlobalVar.popIndex);
@@ -176,68 +176,68 @@ namespace as_get
                 {
                     GetExistingScores(myPopNumber, 0);
                 }
- 
 
-         //           Console.WriteLine("GetTopScore");
-                    topScore = GetTopScore(ref myConnection);
 
-                    GlobalVar.MutPer100Members = GlobalVar.random.Next(GlobalVar.normalMut, GlobalVar.alternateMut);
-                    GlobalVar.parentDist = GlobalVar.random.Next(0, 50) + 1;
+                //           Console.WriteLine("GetTopScore");
+                topScore = GetTopScore(ref myConnection);
 
-                    if (!GlobalVar.myGeneration.Equals(0))
-                    {
-                        NextGenerationValues(myPopNumber);
-                    }
-
-                    try
-                    {
-                        myConnection.Close();
-                        myConnection.Dispose();
-                    }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine(e.ToString());
-                        Console.WriteLine("database error - cancelling");
-                        return;
-                    }
+                GlobalVar.MutPer100Members = GlobalVar.random.Next(GlobalVar.normalMut, GlobalVar.alternateMut);
+                GlobalVar.parentDist = GlobalVar.random.Next(0, 50) + 1;
 
                 if (!GlobalVar.myGeneration.Equals(0))
-                    {
-                        char[] buildChars;
-                        buildChars = new char[350000];
+                {
+                    NextGenerationValues(myPopNumber);
+                }
 
-                        for (int i = 0; i < GlobalVar.featureCount; i++)
-                            buildChars[i] = (char)GlobalVar.features[i, 0];
+                try
+                {
+                    myConnection.Close();
+                    myConnection.Dispose();
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.ToString());
+                    Console.WriteLine("database error - cancelling");
+                    return;
+                }
 
-                        string bs = new string(buildChars);
-                        bs = bs.Substring(0, GlobalVar.featureCount);
+                if (!GlobalVar.myGeneration.Equals(0))
+                {
+                    char[] buildChars;
+                    buildChars = new char[350000];
 
-                        string fn = "";
-                        fn = "mx" + Convert.ToString(myPopNumber);
-                        File.WriteAllText(fn, bs);
-                    }
+                    for (int i = 0; i < GlobalVar.featureCount; i++)
+                        buildChars[i] = (char)GlobalVar.features[i, 0];
+
+                    string bs = new string(buildChars);
+                    bs = bs.Substring(0, GlobalVar.featureCount);
+
+                    string fn = "";
+                    fn = "mx" + Convert.ToString(myPopNumber);
+                    File.WriteAllText(fn, bs);
+                }
 
                 // write out xml
-               bool outputXML = false;
-               int XMLOut = 0;
-               while (!outputXML)
-               {
-                   XMLOut++;
-                   try
-                   {
-                       outputXML = true;
-                       XMLfile = ExportXMLfile(myPopNumber);
-                   }
-                   catch
-                   {
-                       System.Threading.Thread.Sleep(10);
-                       outputXML = false;
-                   }
-                   if (XMLfile.Equals("error"))
-                       outputXML = false;
-                   if (XMLOut > 5)
-                       return;
-               }
+                bool outputXML = false;
+                int XMLOut = 0;
+                while (!outputXML)
+                {
+                    XMLOut++;
+                    try
+                    {
+                        outputXML = true;
+                        XMLfile = ExportXMLfile(myPopNumber);
+                    }
+                    catch
+                    {
+                        System.Threading.Thread.Sleep(10);
+                        outputXML = false;
+                    }
+                    if (XMLfile.Equals("error"))
+                        outputXML = false;
+                    if (XMLOut > 5)
+                        return;
+                }
 
                 // call the user processing job in the series...
 
@@ -246,13 +246,13 @@ namespace as_get
                 userProcess.StartInfo.CreateNoWindow = true;
                 userProcess.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
                 userProcess.StartInfo.FileName = "as_rtcmix.exe";
-//                userProcess.StartInfo.FileName = "as_user.exe";  // dsm
+                //                userProcess.StartInfo.FileName = "as_user.exe";  // dsm
                 userProcess.StartInfo.Arguments = XMLfile;
                 userProcess.Start();
                 userProcess.WaitForExit();
                 userProcess.Dispose();
 
-    // get updated XML (with score)
+                // get updated XML (with score)
                 bool openXML = false;
                 int XMLTry = 0;
                 while (!openXML)
@@ -311,7 +311,7 @@ namespace as_get
 
                 // am I still looping?
 
-     //           Console.WriteLine("unflag");
+                //           Console.WriteLine("unflag");
 
                 MySqlCommand unflagCommand = new MySqlCommand("delete from busy_table " +
     " where job_name = @parmJob and population_index = @parmPop and member_index = @parmMember ", myConnection);
@@ -319,12 +319,12 @@ namespace as_get
                 unflagCommand.Parameters.AddWithValue("@parmJob", GlobalVar.jobName);
                 unflagCommand.Parameters.AddWithValue("@parmPop", GlobalVar.popIndex);
                 unflagCommand.Parameters.AddWithValue("@parmMember", myPopNumber);
-                
+
                 unflagCommand.ExecuteNonQuery();
                 unflagCommand.Dispose();
 
                 runLoop--;
-    //            Console.WriteLine("loop");
+                //            Console.WriteLine("loop");
 
             }
             myConnection.Close();
@@ -394,7 +394,7 @@ namespace as_get
                 InsertBestScore(ref myConnection);
             }
 
-            MySqlCommand countCommand = new MySqlCommand ("SELECT member_index FROM member_header where member_score = @scoreParm", myConnection);
+            MySqlCommand countCommand = new MySqlCommand("SELECT member_index FROM member_header where member_score = @scoreParm", myConnection);
             countCommand.Parameters.AddWithValue("@scoreParm", foundScore);
             foundCount = 0;
             try
@@ -411,7 +411,7 @@ namespace as_get
             {
                 Console.WriteLine(e.ToString());
             }
-           if (foundCount > 1)
+            if (foundCount > 1)
                 foundScore++;
 
             return (foundScore);
@@ -462,8 +462,8 @@ namespace as_get
             insertCommand.Parameters.AddWithValue("@parmJob", GlobalVar.jobName);
             insertCommand.Parameters.AddWithValue("@parmAvg", avgGeneration);
             insertCommand.Parameters.AddWithValue("@parmTop", GlobalVar.bestScore);
-//            insertCommand.Parameters.AddWithValue("@parmPossible", 515886062); //blue
-//            insertCommand.Parameters.AddWithValue("@parmPossible", 820278363); //sine
+            //            insertCommand.Parameters.AddWithValue("@parmPossible", 515886062); //blue
+            //            insertCommand.Parameters.AddWithValue("@parmPossible", 820278363); //sine
             insertCommand.Parameters.AddWithValue("@parmPossible", 713636118); //short
             //    insertCommand.Parameters.AddWithValue("@parmPossible", (GlobalVar.featureCount*8));
             try
@@ -511,7 +511,7 @@ namespace as_get
         {
             // find (or create) a non-busy population member, return its index
 
-            int randomPopNumber = -1; 
+            int randomPopNumber = -1;
             bool foundMe = false;
             bool gotResults = true;
             bool isBusy = false;
@@ -521,7 +521,7 @@ namespace as_get
                 " where job_name = @parmJob and population_index = @parmPop and member_index = @parmMember", myConnection);
 
 
-            MySqlCommand setBusyCommand = new MySqlCommand("insert into busy_table " + 
+            MySqlCommand setBusyCommand = new MySqlCommand("insert into busy_table " +
                 "(job_name, population_index, member_index, process_id, process_gen) " +
                 " values (@parmJob, @parmPop, @parmMember, @parmID, @parmGen) ", myConnection);
 
@@ -537,7 +537,7 @@ namespace as_get
 
 
             MySqlDataReader myReader = null;
-//            MySqlDataReader memberReader = null;
+            //            MySqlDataReader memberReader = null;
 
 
             while (!foundMe)
@@ -576,8 +576,8 @@ namespace as_get
                     if (gotResults)
                     {
                         myReader.Read();
-                        GlobalVar.myGeneration = myReader.GetInt32("member_generation"); 
-                        GlobalVar.myScore = myReader.GetInt64("member_score");                          
+                        GlobalVar.myGeneration = myReader.GetInt32("member_generation");
+                        GlobalVar.myScore = myReader.GetInt64("member_score");
                     }
                     myReader.Close();
                 }
@@ -599,10 +599,10 @@ namespace as_get
                         foundMe = true;
                         GlobalVar.myGeneration = 0;
                     }
-                    catch 
+                    catch
                     {
                         foundMe = false;
-                   //     Console.Write(".I" + randomPopNumber.ToString() + ".");
+                        //     Console.Write(".I" + randomPopNumber.ToString() + ".");
                         return (-1);
                     }
 
@@ -638,10 +638,10 @@ namespace as_get
                             foundMe = true;
 
                         }
-                        catch 
+                        catch
                         {
                             foundMe = false; // another process got it
-                      //      Console.Write(".B" + randomPopNumber.ToString() + ".");
+                                             //      Console.Write(".B" + randomPopNumber.ToString() + ".");
                             return (-1);
                         }
                     }
@@ -657,33 +657,33 @@ namespace as_get
         static void GetJobParameters(ref MySqlConnection myConnection)
         {
 
-//            MySqlCommand myCommand = new MySqlCommand("select * from run_data where job_name = @jobParam "
-//                + " and job_index = @ndxParam", myConnection);
-//            myCommand.Parameters.AddWithValue("@jobParam", GlobalVar.jobName);
-//            myCommand.Parameters.AddWithValue("@ndxParam", GlobalVar.myUniqueID);
-       //     Console.WriteLine("find " + GlobalVar.jobName + " : " + GlobalVar.myUniqueID.ToString());
-//            try
-//            {
-//                MySqlDataReader myReader = myCommand.ExecuteReader();
-//
-//                while (myReader.Read())
-//                {
-//                    GlobalVar.normalMut = myReader.GetInt32("mrate1");
-//                    GlobalVar.alternateMut = myReader.GetInt32("mrate2");
-//                    GlobalVar.xoverType = myReader.GetInt32("crossover_type");
-//                    GlobalVar.parentDist = myReader.GetInt32("parent_neighborhood");
-//                    GlobalVar.segmentPct = myReader.GetInt32("segment_pct");
-                    //           Console.WriteLine("mut rates from db: " + GlobalVar.normalMut.ToString()
-         //               + " " + GlobalVar.alternateMut.ToString());
- //               }
-//                myReader.Close();
-//            }
-//            catch (Exception e)
-//            {
-//                Console.WriteLine(e.ToString());
-//            }
-//            if (GlobalVar.xoverType > 2)
-//                GlobalVar.xoverType = GlobalVar.random.Next(0, 2);
+            //            MySqlCommand myCommand = new MySqlCommand("select * from run_data where job_name = @jobParam "
+            //                + " and job_index = @ndxParam", myConnection);
+            //            myCommand.Parameters.AddWithValue("@jobParam", GlobalVar.jobName);
+            //            myCommand.Parameters.AddWithValue("@ndxParam", GlobalVar.myUniqueID);
+            //     Console.WriteLine("find " + GlobalVar.jobName + " : " + GlobalVar.myUniqueID.ToString());
+            //            try
+            //            {
+            //                MySqlDataReader myReader = myCommand.ExecuteReader();
+            //
+            //                while (myReader.Read())
+            //                {
+            //                    GlobalVar.normalMut = myReader.GetInt32("mrate1");
+            //                    GlobalVar.alternateMut = myReader.GetInt32("mrate2");
+            //                    GlobalVar.xoverType = myReader.GetInt32("crossover_type");
+            //                    GlobalVar.parentDist = myReader.GetInt32("parent_neighborhood");
+            //                    GlobalVar.segmentPct = myReader.GetInt32("segment_pct");
+            //           Console.WriteLine("mut rates from db: " + GlobalVar.normalMut.ToString()
+            //               + " " + GlobalVar.alternateMut.ToString());
+            //               }
+            //                myReader.Close();
+            //            }
+            //            catch (Exception e)
+            //            {
+            //                Console.WriteLine(e.ToString());
+            //            }
+            //            if (GlobalVar.xoverType > 2)
+            //                GlobalVar.xoverType = GlobalVar.random.Next(0, 2);
 
         }
 
@@ -703,21 +703,21 @@ namespace as_get
             {
                 MySqlDataReader myReader = null;
 
-                MySqlCommand myCommand = new MySqlCommand("select feature_count, feature_type, feature_num_min, feature_num_max " + 
-                    "from population_features " + 
+                MySqlCommand myCommand = new MySqlCommand("select feature_count, feature_type, feature_num_min, feature_num_max " +
+                    "from population_features " +
                     "where job_name = @parmMyJob and population_index = @parmMyPop", myConnection);
-                myCommand.Parameters.AddWithValue("@parmMyJob",GlobalVar.jobName);
-                myCommand.Parameters.AddWithValue("@parmMyPop",GlobalVar.popIndex);
+                myCommand.Parameters.AddWithValue("@parmMyJob", GlobalVar.jobName);
+                myCommand.Parameters.AddWithValue("@parmMyPop", GlobalVar.popIndex);
                 myReader = myCommand.ExecuteReader();
                 while (myReader.Read())
                 {
                     GlobalVar.featureCount = myReader.GetInt32("feature_count");
 
                     //featureType = myReader.GetString("feature_type");
-                    featureType = "int"; 
+                    featureType = "int";
                     if (featureType.Equals("int"))
                     {
-                        featureIntMin = myReader.GetInt32("feature_num_min"); 
+                        featureIntMin = myReader.GetInt32("feature_num_min");
                         featureIntMax = myReader.GetInt32("feature_num_max");
                     }
                 }
@@ -728,7 +728,7 @@ namespace as_get
                 {
                     newIntValue = GlobalVar.random.Next(featureIntMin, featureIntMax);
                     GlobalVar.features[i, 0] = newIntValue;
-//                    GlobalVar.features[i, 0] = 0; // dsm experiment start with zero
+                    //                    GlobalVar.features[i, 0] = 0; // dsm experiment start with zero
                 }
 
                 for (int i = 0; i < GlobalVar.featureCount; i++)
@@ -792,7 +792,7 @@ namespace as_get
                     buildChars = featureString.ToCharArray();
                 }
 
-                Array.Resize(ref buildChars, GlobalVar.featureCount); 
+                Array.Resize(ref buildChars, GlobalVar.featureCount);
 
                 for (int i = 0; i < GlobalVar.featureCount; i++)
                 {
@@ -832,11 +832,6 @@ namespace as_get
                 }
             }
 
-            for (int fx = 0; fx < (scoreFrames-1); fx++)
-            {
-                GlobalVar.frameScore[parent, fx] = GlobalVar.frameScore[parent, fx] + GlobalVar.frameScore[parent, fx+1];
-            }
-
             GetExistingCharacteristics(popMember, parent);
         }
 
@@ -850,7 +845,7 @@ namespace as_get
             int xP1 = 0;
             int xP2 = 0;
             int parentX = 1;
-            int neighborhood = GlobalVar.random.Next(1,(GlobalVar.parentDist+1));
+            int neighborhood = GlobalVar.random.Next(1, (GlobalVar.parentDist + 1));
             nextNeighbor = popMember;
 
             for (int nx = 0; nx < 5; nx++)
@@ -872,7 +867,7 @@ namespace as_get
                 parentX++;
             }
 
-            long bestScore = 0; 
+            long bestScore = 0;
             int fIndex = 0;
             for (int i = 0; i < scoreFrames; i++)
             {
@@ -880,7 +875,7 @@ namespace as_get
 
                 xP1 = 0;
                 bestScore = GlobalVar.frameScore[xP1, i];
-//                if (bestScore < 0) bestScore = 0;
+                //                if (bestScore < 0) bestScore = 0;
                 for (int px = 1; px < 6; px++)
                 {
                     if ((GlobalVar.frameScore[px, i] >= GlobalVar.frameScore[xP1, i]))
@@ -892,7 +887,7 @@ namespace as_get
 
                 xP2 = 0;
                 bestScore = GlobalVar.frameScore[xP2, i];
-//                if (bestScore < 0) bestScore = 0;
+                //                if (bestScore < 0) bestScore = 0;
                 for (int px = 6; px < 11; px++)
                 {
                     if ((GlobalVar.frameScore[px, i] >= GlobalVar.frameScore[xP2, i]))
@@ -920,18 +915,18 @@ namespace as_get
             // mutate here
             for (int i = 0; i < GlobalVar.featureCount; i++)
             {
-                    if (GlobalVar.random.Next(0, (GlobalVar.featureCount * 100)) < GlobalVar.MutPer100Members)
-                    {
-                        mutatePosition = GlobalVar.random.Next(0, 8);
-                        mutateValue = mutateArray[mutatePosition];
-                        if (GlobalVar.random.Next(0, 100) < 50)
-                            mutateValue = -1 * mutateValue;
-                        GlobalVar.features[i, 0] = GlobalVar.features[i, 0] + mutateValue;
-                        if (GlobalVar.features[i, 0] < 0)
-                            GlobalVar.features[i, 0] = GlobalVar.features[i, 0] - (2 * mutateValue);
-                        if (GlobalVar.features[i, 0] > 255)
-                            GlobalVar.features[i, 0] = GlobalVar.features[i, 0] - (2 * mutateValue);
-                    }                
+                if (GlobalVar.random.Next(0, (GlobalVar.featureCount * 100)) < GlobalVar.MutPer100Members)
+                {
+                    mutatePosition = GlobalVar.random.Next(0, 8);
+                    mutateValue = mutateArray[mutatePosition];
+                    if (GlobalVar.random.Next(0, 100) < 50)
+                        mutateValue = -1 * mutateValue;
+                    GlobalVar.features[i, 0] = GlobalVar.features[i, 0] + mutateValue;
+                    if (GlobalVar.features[i, 0] < 0)
+                        GlobalVar.features[i, 0] = GlobalVar.features[i, 0] - (2 * mutateValue);
+                    if (GlobalVar.features[i, 0] > 255)
+                        GlobalVar.features[i, 0] = GlobalVar.features[i, 0] - (2 * mutateValue);
+                }
             }
         }
 
@@ -971,8 +966,8 @@ namespace as_get
                 xml.WriteWhitespace("\n");
 
                 xml.WriteElementString("Pop", popMember.ToString());
-                xml.WriteWhitespace("\n  "); 
-                
+                xml.WriteWhitespace("\n  ");
+
                 xml.WriteElementString("Generation", GlobalVar.myGeneration.ToString());
                 xml.WriteWhitespace("\n  ");
 
