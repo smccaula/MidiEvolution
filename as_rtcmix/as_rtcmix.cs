@@ -17,7 +17,7 @@ namespace as_rtcmix
         const int bytesPerEvent = 6;
         const double samplesSecond = 44100.0;
         const int maxSamples = 44100 * 30; // 30 seconds max
-        const int scoreFrames = 8;
+        const int scoreFrames = 64;
 
         public static class GlobalVar
         {
@@ -75,6 +75,8 @@ namespace as_rtcmix
             public static bool allFrames = false;
             public static int startFrame = 0;
             public static double[] freqLookup = new double[256 * 256];
+            public static int scoreLines = 0;
+            public static int nonZero = 0;
         }
 
         static void Main(string[] args)
@@ -83,8 +85,8 @@ namespace as_rtcmix
             double freqInterval = 1.0014451;
 
             GlobalVar.freqLookup[0] = 0;
-            GlobalVar.freqLookup[0] = 27.50;
-            for (int i = 1; i < (256*16); i++)
+            GlobalVar.freqLookup[1] = 27.50;
+            for (int i = 2; i < (256*16); i++)
             {
                 GlobalVar.freqLookup[i] = GlobalVar.freqLookup[i - 1] * freqInterval;
             }
@@ -104,33 +106,17 @@ namespace as_rtcmix
                 return;
             }
 
-            bool processSuccess = false;
-            int processTry = 0;
-
-            while (!processSuccess)
-            {
-                processSuccess = PreProcess(XMLfile);
-                if (!processSuccess)
+                if (PreProcess(XMLfile))
                 {
-                    //                   Console.WriteLine("retry " + processTry.ToString() + " wc-"
-                    //                       + GlobalVar.popMember.ToString() + " gen-" +  GlobalVar.myGeneration.ToString() + " sco-" 
-                    //                       + GlobalVar.myScore.ToString());
-                    System.Threading.Thread.Sleep(1000);
+                OutputAllFiles(XMLfile); 
                 }
-                processTry++;
-                if (processTry > 2)
-                {
-                    // error recovery routines
-                    //                   Console.WriteLine("quitting");
-                    return;
-                }
-
-            }
-            OutputAllFiles(XMLfile);
+            
         }
 
         static void OutputAllFiles(string XMLfile)
         {
+            GlobalVar.myScore = (GlobalVar.totalDiff - AlternateScore(0, GlobalVar.samples));
+
             // write sx, mx and xml files, only on successful completion of process
             WriteScoreFile();
             if (GlobalVar.myScore > GlobalVar.bestScore)
@@ -187,8 +173,6 @@ namespace as_rtcmix
                 return (false);
             }
 
-
-
             if (!RenderScoreToWav())
             {
                 return (false);
@@ -197,7 +181,6 @@ namespace as_rtcmix
             // at this point I have both wav files, and the rest of the process should be identical
 
 
-            GlobalVar.myScore = (GlobalVar.totalDiff - AlternateScore(0, GlobalVar.samples));
             //            Console.WriteLine("myScore: " + GlobalVar.myScore + " gs:" + GlobalVar.samples + " td:" + GlobalVar.totalDiff
             //                + " pop-"  + GlobalVar.popMember.ToString() + " gen-" + GlobalVar.myGeneration.ToString());
 
@@ -272,8 +255,14 @@ namespace as_rtcmix
 
                 tempPan = 0;
 
+                int genX = GlobalVar.myGeneration * 2;
+                if (GlobalVar.myGeneration < 55) genX = 110;
+
+                if (tempFreq > genX) tempAmp = 0; // test DSM
+
                 if ((tempAmp > 0) && (tempDur > 0) && (tempFreq > 0))
                 {
+                    GlobalVar.scoreLines++;
                     scoreText.WriteLine("WAVETABLE("
                         + Convert.ToString(tempStart) + "," // 0.00 to end time (1 bytes)
                         + Convert.ToString(tempDur / 4096.00) + "," // 0.00 to 0.25 (1 byte)
@@ -339,17 +328,6 @@ namespace as_rtcmix
             for (int i = startX; i < endX; i++)
             {
                 runningScore = runningScore + (Math.Abs(GlobalVar.targetWav[i] - GlobalVar.calcWav[i]));
-            }
-            return (runningScore);
-        }
-
-        static long TotalSound(int startX, int endX)
-        {
-            long runningScore = 0;
-
-            for (int i = startX; i < endX; i++)
-            {
-                runningScore = runningScore + (Math.Abs(GlobalVar.calcWav[i]));
             }
             return (runningScore);
         }
@@ -441,6 +419,10 @@ namespace as_rtcmix
                 int startX = fx * (GlobalVar.samples / scoreFrames);
                 int endX = startX + (GlobalVar.samples / scoreFrames);
                 GlobalVar.frameScore[fx] = GlobalVar.potentialDiff[fx] - AlternateScore(startX, endX);
+                if (GlobalVar.nonZero < 1)
+                    GlobalVar.frameScore[fx] = ((GlobalVar.frameScore[fx] * 9) / 10);
+                if (GlobalVar.scoreLines < 1)
+                    GlobalVar.frameScore[fx] = ((GlobalVar.frameScore[fx] * 9) / 10);
                 scoreFile.Write(Convert.ToInt32(GlobalVar.frameScore[fx]));
             }
             scoreFile.Close();
@@ -631,7 +613,6 @@ namespace as_rtcmix
 
                 Array.Resize(ref buildChars, GlobalVar.featureCount);
 
-                int nonZero = 0;
                 for (int i = 0; i < GlobalVar.featureCount; i++)
                 {
                     GlobalVar.features[i] = buildChars[i];
@@ -640,18 +621,9 @@ namespace as_rtcmix
                     if (GlobalVar.features[i] < 0)
                         GlobalVar.features[i] = 0;
                     if (GlobalVar.features[i] > 0)
-                        nonZero++;
+                        GlobalVar.nonZero++;
                 }
-                if (nonZero < 1)
-                {
-                    int newIntValue = 0;
-                    for (int i = 0; i < GlobalVar.featureCount; i++)
-                    {
-                        newIntValue = GlobalVar.random.Next(0, 255);
-                        GlobalVar.features[i] = newIntValue;
-                    }
-
-                }
+ 
                 AssignToParamaters();
 
             }

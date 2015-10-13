@@ -14,7 +14,7 @@ namespace as_get
 {
     class as_get
     {
-        const int scoreFrames = 8;
+        const int scoreFrames = 64;
         public static class GlobalVar
         {
             public static int popCount = 0;
@@ -23,7 +23,7 @@ namespace as_get
             public static int myGeneration = 0;
             public static long myScore = 0;
             public static Random random = new Random();
-            public static int[,] features = new int[150000, 11];
+            public static int[,] features = new int[120000, 11];
             public static int featureCount = 0;
             public static int launchGeneration = 0;
             public static int myUniqueID = 0;
@@ -33,7 +33,7 @@ namespace as_get
             public static int alternateMut = 300;
             public static int xoverType = 0;
             public static int parentDist = 20;
-            public static long[,] frameScore = new long[11, scoreFrames];
+            public static long[,] frameScore = new long[scoreFrames, 11];
         }
 
         static void Main(string[] args)
@@ -159,7 +159,7 @@ namespace as_get
                         " where job_name = @parmJob and population_index = @parmPop and member_index = @parmMember ", myConnection);
 
                     //    GlobalVar.myGeneration++;
-                    preupdateCommand.Parameters.AddWithValue("@parmScore", -1);
+                    preupdateCommand.Parameters.AddWithValue("@parmScore", -999999999);
                     preupdateCommand.Parameters.AddWithValue("@parmJob", GlobalVar.jobName);
                     preupdateCommand.Parameters.AddWithValue("@parmPop", GlobalVar.popIndex);
                     preupdateCommand.Parameters.AddWithValue("@parmMember", myPopNumber);
@@ -728,7 +728,8 @@ namespace as_get
                 {
                     newIntValue = GlobalVar.random.Next(featureIntMin, featureIntMax);
                     GlobalVar.features[i, 0] = newIntValue;
-                    //                    GlobalVar.features[i, 0] = 0; // dsm experiment start with zero
+                    if ((GlobalVar.random.Next(0, 100) < 75))
+                        GlobalVar.features[i, 0] = 0; // dsm experiment start with half zero
                 }
 
                 for (int i = 0; i < GlobalVar.featureCount; i++)
@@ -820,7 +821,7 @@ namespace as_get
 
                 for (int fx = 0; fx < scoreFrames; fx++)
                 {
-                    GlobalVar.frameScore[parent, fx] = scoreFile.ReadInt32();
+                    GlobalVar.frameScore[fx, parent] = scoreFile.ReadInt32();
                 }
                 scoreFile.Close();
             }
@@ -828,9 +829,15 @@ namespace as_get
             {
                 for (int fx = 0; fx < scoreFrames; fx++)
                 {
-                    GlobalVar.frameScore[parent, fx] = -1;
+                    GlobalVar.frameScore[fx, parent] = -999999999 / scoreFrames;
                 }
             }
+
+            for (int fx = 0; fx < (scoreFrames-1); fx++)
+            {
+                GlobalVar.frameScore[fx, parent] = GlobalVar.frameScore[fx, parent] + GlobalVar.frameScore[fx+1, parent];
+            }
+
 
             GetExistingCharacteristics(popMember, parent);
         }
@@ -874,26 +881,26 @@ namespace as_get
                 // get parents based on feature/frame
 
                 xP1 = 0;
-                bestScore = GlobalVar.frameScore[xP1, i];
+                bestScore = GlobalVar.frameScore[i, xP1];
                 //                if (bestScore < 0) bestScore = 0;
                 for (int px = 1; px < 6; px++)
                 {
-                    if ((GlobalVar.frameScore[px, i] >= GlobalVar.frameScore[xP1, i]))
+                    if ((GlobalVar.frameScore[i, px] >= GlobalVar.frameScore[i, xP1]))
                     {
                         xP1 = px;
-                        bestScore = GlobalVar.frameScore[xP1, i];
+                        bestScore = GlobalVar.frameScore[i, xP1];
                     }
                 }
 
                 xP2 = 0;
-                bestScore = GlobalVar.frameScore[xP2, i];
+                bestScore = GlobalVar.frameScore[i, xP2];
                 //                if (bestScore < 0) bestScore = 0;
                 for (int px = 6; px < 11; px++)
                 {
-                    if ((GlobalVar.frameScore[px, i] >= GlobalVar.frameScore[xP2, i]))
+                    if ((GlobalVar.frameScore[i, px] >= GlobalVar.frameScore[i, xP2]))
                     {
                         xP2 = px;
-                        bestScore = GlobalVar.frameScore[xP2, i];
+                        bestScore = GlobalVar.frameScore[i, xP2];
                     }
                 }
 
