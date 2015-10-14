@@ -17,7 +17,7 @@ namespace as_rtcmix
         const int bytesPerEvent = 6;
         const double samplesSecond = 44100.0;
         const int maxSamples = 44100 * 30; // 30 seconds max
-        const int scoreFrames = 64;
+        const int scoreFrames = 512;
 
         public static class GlobalVar
         {
@@ -220,6 +220,7 @@ namespace as_rtcmix
             double tempFreq = 0.0;
             double tempPan = 0.0;
             double tempAmp = 0.0;
+            bool playFeature = true;
 
             //loop through events
             while (MoreEvents)
@@ -243,7 +244,11 @@ namespace as_rtcmix
             //    tempAmp = (GlobalVar.CMIXamp[eventX] * 1024) / 256; // dsm too coarse?
 
                 freqNDX = GlobalVar.CMIXfreq[eventX];
-                if (freqNDX > 32767) freqNDX = freqNDX - 32768;
+                if (freqNDX > 32767)
+                {
+                    freqNDX = freqNDX - 32768;
+                    playFeature = false;
+                }
                 if (freqNDX > 16383) freqNDX = freqNDX - 16384;
                 if (freqNDX > 8191) freqNDX = freqNDX - 8192;
                 if (freqNDX > 4095) freqNDX = freqNDX - 4096;
@@ -252,7 +257,6 @@ namespace as_rtcmix
                 if (tempAmp > 32767) tempAmp = tempAmp - 32768;
                 if (tempAmp > 16383) tempAmp = tempAmp - 16384;
 
-
                 tempPan = 0;
 
                 int genX = GlobalVar.myGeneration * 2;
@@ -260,7 +264,7 @@ namespace as_rtcmix
 
                 if (tempFreq > genX) tempAmp = 0; // test DSM
 
-                if ((tempAmp > 0) && (tempDur > 0) && (tempFreq > 0))
+                if ((tempAmp > 0) && (tempDur > 0) && (tempFreq > 0) && (playFeature))
                 {
                     GlobalVar.scoreLines++;
                     scoreText.WriteLine("WAVETABLE("

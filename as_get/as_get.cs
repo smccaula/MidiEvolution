@@ -14,7 +14,7 @@ namespace as_get
 {
     class as_get
     {
-        const int scoreFrames = 64;
+        const int scoreFrames = 512;
         public static class GlobalVar
         {
             public static int popCount = 0;
@@ -46,8 +46,6 @@ namespace as_get
             long topScore = 0;
             string jobType = null;
             string XMLfile = "";
-
-
 
             // get input parameters for job name and iteration count
 
