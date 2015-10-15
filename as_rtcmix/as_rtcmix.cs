@@ -17,15 +17,14 @@ namespace as_rtcmix
         const int bytesPerEvent = 6;
         const double samplesSecond = 44100.0;
         const int maxSamples = 44100 * 30; // 30 seconds max
-        const int scoreFrames = 512;
+        const int scoreFrames = 16;
 
         public static class GlobalVar
         {
             public static int endTime = 0;
-            public static int eventsThisRun = 8192;
+            public static int eventsThisRun = 1024;
             public static int featureCount = (bytesPerEvent * eventsThisRun);
             public static int[] features = new int[350000];
-            public static int[] copyFeatures = new int[350000];
             public static string arg0 = "";
             public static long[] targetWav = new long[maxSamples];
             public static int samples = 0;
@@ -76,7 +75,6 @@ namespace as_rtcmix
             public static int startFrame = 0;
             public static double[] freqLookup = new double[256 * 256];
             public static int scoreLines = 0;
-            public static int nonZero = 0;
         }
 
         static void Main(string[] args)
@@ -84,11 +82,14 @@ namespace as_rtcmix
 
             double freqInterval = 1.0014451;
 
-            GlobalVar.freqLookup[0] = 0;
-            GlobalVar.freqLookup[1] = 27.50;
-            for (int i = 2; i < (256*16); i++)
+            GlobalVar.freqLookup[0] = 55.0;
+            for (int i = 1; i < (481); i++)
             {
                 GlobalVar.freqLookup[i] = GlobalVar.freqLookup[i - 1] * freqInterval;
+            }
+            for (int i = 480; i < (256 * 16); i++)
+            {
+                GlobalVar.freqLookup[i] = GlobalVar.freqLookup[i - 480] * 2;
             }
 
             string XMLfile = "test89.xml";
@@ -108,7 +109,7 @@ namespace as_rtcmix
 
                 if (PreProcess(XMLfile))
                 {
-                OutputAllFiles(XMLfile); 
+                    OutputAllFiles(XMLfile); 
                 }
             
         }
@@ -117,21 +118,37 @@ namespace as_rtcmix
         {
             GlobalVar.myScore = (GlobalVar.totalDiff - AlternateScore(0, GlobalVar.samples));
 
+            // at this point I have both wav files, and the rest of the process should be identical
+
+
+         //         Console.WriteLine("myScore: " + GlobalVar.myScore + " gs:" + GlobalVar.samples + " td:" + GlobalVar.totalDiff
+         //             + " pop-" + GlobalVar.popMember.ToString() + " gen-" + GlobalVar.myGeneration.ToString());
+
+
             // write sx, mx and xml files, only on successful completion of process
-            WriteScoreFile();
+
+            if (!WriteScoreFile())
+                return;
+
             if (GlobalVar.myScore > GlobalVar.bestScore)
             {
                 //x          WriteBestFile();
             }
-            ExportXMLfile(XMLfile);
+
+            if (!ExportXMLfile(XMLfile))
+                return;
+           
 
             char[] buildChars;
             buildChars = new char[350000];
 
+            int nonZero = 0;
             for (int i = 0; i < GlobalVar.featureCount; i++)
             {
                 buildChars[i] = (char)GlobalVar.features[i];
+                if (GlobalVar.features[i] > 0) nonZero++;
             }
+        //    Console.WriteLine("cmix  write pop " + GlobalVar.popMember + " " + nonZero);
 
             string bs = new string(buildChars);
             bs = bs.Substring(0, GlobalVar.featureCount);
@@ -139,21 +156,26 @@ namespace as_rtcmix
             string fn = "";
             fn = "mx" + Convert.ToString(GlobalVar.popMember);
             File.WriteAllText(fn, bs);
+            WaitForFile(fn);
         }
 
         static bool PreProcess(string XMLfile)
         {
-            ImportXMLfile(XMLfile);
+            if (!ImportXMLfile(XMLfile))
+            {
+                Console.WriteLine("ImportXMLfile input error");
+                return (false);
+            }
 
             if (!GetExistingCharacteristics(GlobalVar.popMember))
             {
-                //      Console.WriteLine("input error");
+                Console.WriteLine("GetExistingCharacteristics input error");
                 return (false);
             }
 
             for (int i = 0; i < GlobalVar.samples; i++)
             {
-                GlobalVar.sampleDiff[i] = 2 * (Math.Abs(GlobalVar.targetWav[i]));
+                GlobalVar.sampleDiff[i] = (32 * 1024) + (Math.Abs(GlobalVar.targetWav[i]));
                 GlobalVar.totalDiff = GlobalVar.totalDiff + GlobalVar.sampleDiff[i];  // worst is mirror
             }
 
@@ -164,25 +186,22 @@ namespace as_rtcmix
                 int endX = startX + (GlobalVar.samples / scoreFrames);
                 for (int sx = startX; sx < endX; sx++)
                 {
-                    GlobalVar.potentialDiff[fx] = GlobalVar.potentialDiff[fx] + (2 * Math.Abs(GlobalVar.targetWav[sx]));
+                    GlobalVar.potentialDiff[fx] = GlobalVar.potentialDiff[fx] + (32 * 1024) + (Math.Abs(GlobalVar.targetWav[sx]));
                 }
             }
 
             if (!BuildScoreFile())
             {
+                Console.WriteLine("BuildScoreFile input error");
                 return (false);
             }
 
             if (!RenderScoreToWav())
             {
+                Console.WriteLine("RenderScoreToWav input error");
                 return (false);
             }
 
-            // at this point I have both wav files, and the rest of the process should be identical
-
-
-            //            Console.WriteLine("myScore: " + GlobalVar.myScore + " gs:" + GlobalVar.samples + " td:" + GlobalVar.totalDiff
-            //                + " pop-"  + GlobalVar.popMember.ToString() + " gen-" + GlobalVar.myGeneration.ToString());
 
             return (true);
         }
@@ -220,8 +239,9 @@ namespace as_rtcmix
             double tempFreq = 0.0;
             double tempPan = 0.0;
             double tempAmp = 0.0;
-            bool playFeature = true;
+            bool playFeature = true; // disabled for now
 
+            GlobalVar.scoreLines = 0;
             //loop through events
             while (MoreEvents)
             {
@@ -247,29 +267,30 @@ namespace as_rtcmix
                 if (freqNDX > 32767)
                 {
                     freqNDX = freqNDX - 32768;
-                    playFeature = false;
+                    playFeature = true;
                 }
                 if (freqNDX > 16383) freqNDX = freqNDX - 16384;
                 if (freqNDX > 8191) freqNDX = freqNDX - 8192;
                 if (freqNDX > 4095) freqNDX = freqNDX - 4096;
                 tempFreq = GlobalVar.freqLookup[freqNDX];
-                tempAmp = GlobalVar.CMIXamp[eventX]; // dsm too coarse?  
+                tempAmp = GlobalVar.CMIXamp[eventX];  
                 if (tempAmp > 32767) tempAmp = tempAmp - 32768;
                 if (tempAmp > 16383) tempAmp = tempAmp - 16384;
-
+                if (tempAmp > 8191) tempAmp = tempAmp - 8192;
+                if (tempAmp > 4095) tempAmp = tempAmp - 4096;
                 tempPan = 0;
 
-                int genX = GlobalVar.myGeneration * 2;
-                if (GlobalVar.myGeneration < 55) genX = 110;
+     //           int genX = GlobalVar.myGeneration * 4;
+     //           if (GlobalVar.myGeneration < 55) genX = 220;
 
-                if (tempFreq > genX) tempAmp = 0; // test DSM
+            //    if (tempFreq > genX) playFeature = false; // test DSM
 
-                if ((tempAmp > 0) && (tempDur > 0) && (tempFreq > 0) && (playFeature))
+                if ((playFeature) && (tempAmp > 0) && (tempDur > 0))
                 {
                     GlobalVar.scoreLines++;
                     scoreText.WriteLine("WAVETABLE("
                         + Convert.ToString(tempStart) + "," // 0.00 to end time (1 bytes)
-                        + Convert.ToString(tempDur / 4096.00) + "," // 0.00 to 0.25 (1 byte)
+                        + Convert.ToString(tempDur / 2048.00) + "," // 0.00 to 0.25 (1 byte)
                         + Convert.ToString(tempAmp) + "," // 0 to ... (2 bytes)
                         + Convert.ToString(tempFreq) + "," // 0 to 20,500 (2 bytes)
                         + Convert.ToString(tempPan) + ",wavet)"); // 0.00 (mono)
@@ -279,6 +300,11 @@ namespace as_rtcmix
                 if (eventX == GlobalVar.eventsThisRun) MoreEvents = false;
             }
             scoreText.Close();
+
+            if (!WaitForFile(scoreFile))
+            {
+                return (false);
+            }
 
             return (true);
         }
@@ -301,6 +327,11 @@ namespace as_rtcmix
             //            shellText.WriteLine("./RTcmix/bin/CMIX -Q -D plug:null < " + scoreFile);
             shellText.Close();
 
+            if (!WaitForFile(shellFile))
+            {
+                return (false);
+            }
+
             scoreProcess = new Process();
 
             scoreProcess.StartInfo.CreateNoWindow = true;
@@ -313,6 +344,11 @@ namespace as_rtcmix
             scoreProcess.Start();
             scoreProcess.WaitForExit();
             scoreProcess.Dispose();
+
+            if (!WaitForFile(Convert.ToString(GlobalVar.popMember) + ".wav"))
+            {
+                return (false);
+            }
 
             GlobalVar.calcWav = openWav(Convert.ToString(GlobalVar.popMember) + ".wav");
 
@@ -328,11 +364,16 @@ namespace as_rtcmix
         static long AlternateScore(int startX, int endX)
         {
             long runningScore = 0;
-
+            int nonZero = 0;
+            long worst = 0;
             for (int i = startX; i < endX; i++)
             {
+                if (GlobalVar.calcWav[i] != 0) nonZero++;
+                worst = worst + 2 * Math.Abs(GlobalVar.targetWav[i]);
                 runningScore = runningScore + (Math.Abs(GlobalVar.targetWav[i] - GlobalVar.calcWav[i]));
             }
+            if (nonZero < 1) runningScore = worst;
+            if (GlobalVar.scoreLines < 1) runningScore = worst;
             return (runningScore);
         }
 
@@ -413,7 +454,7 @@ namespace as_rtcmix
             }
         }
 
-        static void WriteScoreFile()
+        static bool WriteScoreFile()
         {
             string fn = "sx" + Convert.ToString(GlobalVar.popMember);
             BinaryWriter scoreFile = new BinaryWriter(File.Open(fn, FileMode.Create));
@@ -423,16 +464,15 @@ namespace as_rtcmix
                 int startX = fx * (GlobalVar.samples / scoreFrames);
                 int endX = startX + (GlobalVar.samples / scoreFrames);
                 GlobalVar.frameScore[fx] = GlobalVar.potentialDiff[fx] - AlternateScore(startX, endX);
-                if (GlobalVar.nonZero < 1)
-                    GlobalVar.frameScore[fx] = ((GlobalVar.frameScore[fx] * 9) / 10);
-                if (GlobalVar.scoreLines < 1)
-                    GlobalVar.frameScore[fx] = ((GlobalVar.frameScore[fx] * 9) / 10);
                 scoreFile.Write(Convert.ToInt32(GlobalVar.frameScore[fx]));
             }
             scoreFile.Close();
+            if (!WaitForFile(fn))
+                return (false);
+            return (true);
         }
 
-        static int ExportXMLfile(string XMLfile)
+        static bool ExportXMLfile(string XMLfile)
         {
             XmlTextWriter xml;
             string filename = XMLfile;
@@ -445,7 +485,7 @@ namespace as_rtcmix
                 }
                 catch
                 {
-                    return (1);
+                    return (false);
                 }
             }
 
@@ -455,7 +495,7 @@ namespace as_rtcmix
             }
             catch
             {
-                return (1);
+                return (false);
             }
 
             try
@@ -541,7 +581,7 @@ namespace as_rtcmix
             }
             catch
             {
-                return (1);
+                return (false);
             }
 
             try
@@ -555,18 +595,26 @@ namespace as_rtcmix
             }
             catch
             {
-                return (1);
+                return (false);
             }
 
-            return (0);
+            if (!WaitForFile(XMLfile))
+                return (false);
+
+            return (true);
         }
 
-        static void ImportXMLfile(string XMLfile)
+        static bool ImportXMLfile(string XMLfile)
         {
 
             if (XMLfile.Equals("solution.xml"))
-                return;
+                return(false);
             string elementString = "";
+
+            if (!WaitForFile(XMLfile))
+            {
+                return (false);
+            }
 
             System.Xml.XmlTextReader reader = new System.Xml.XmlTextReader(XMLfile);
 
@@ -598,6 +646,7 @@ namespace as_rtcmix
 
             }
             reader.Close();
+            return (true);
         }
 
         static bool GetExistingCharacteristics(int popMember)
@@ -611,12 +660,16 @@ namespace as_rtcmix
             {
                 fn = "mx" + Convert.ToString(popMember);
 
+                if (!WaitForFile(fn))
+                {
+                    return (false);
+                }
+
                 featureString = File.ReadAllText(fn);
-
                 buildChars = featureString.ToCharArray();
-
                 Array.Resize(ref buildChars, GlobalVar.featureCount);
 
+                int nonZero = 0;
                 for (int i = 0; i < GlobalVar.featureCount; i++)
                 {
                     GlobalVar.features[i] = buildChars[i];
@@ -625,9 +678,10 @@ namespace as_rtcmix
                     if (GlobalVar.features[i] < 0)
                         GlobalVar.features[i] = 0;
                     if (GlobalVar.features[i] > 0)
-                        GlobalVar.nonZero++;
+                        nonZero++;
                 }
- 
+        //        Console.WriteLine("cmix  read pop " + GlobalVar.popMember + " " + nonZero);
+
                 AssignToParamaters();
 
             }
@@ -651,6 +705,34 @@ namespace as_rtcmix
                 GlobalVar.CMIXfreq[i] = GlobalVar.features[4 + (i * CMIXSize)] + (256 * GlobalVar.features[5 + (i * CMIXSize)]);
             }
         }
+
+        static bool WaitForFile(string fullPath)
+        {
+        int numTries = 0;
+        while (true)
+        {
+            ++numTries;
+            try
+            {
+                using (FileStream fs = new FileStream(fullPath, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 100))
+                {
+                    fs.ReadByte();
+                    break;
+                }
+            }
+            catch (Exception ex)
+            {
+                if (numTries > 10)
+                {
+                    return false;
+                }
+
+                System.Threading.Thread.Sleep(25);
+            }
+        }
+
+        return true;
+    }
 
         static long bytesToInteger(byte firstByte, byte secondByte)
         {

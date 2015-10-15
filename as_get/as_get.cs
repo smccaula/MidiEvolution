@@ -14,7 +14,7 @@ namespace as_get
 {
     class as_get
     {
-        const int scoreFrames = 512;
+        const int scoreFrames = 16;
         public static class GlobalVar
         {
             public static int popCount = 0;
@@ -30,7 +30,7 @@ namespace as_get
             public static long bestScore = -999999999;
             public static int MutPer100Members = 100;
             public static int normalMut = 50;
-            public static int alternateMut = 300;
+            public static int alternateMut = 250;
             public static int xoverType = 0;
             public static int parentDist = 20;
             public static long[,] frameScore = new long[scoreFrames, 11];
@@ -94,8 +94,6 @@ namespace as_get
                 Console.WriteLine("no database access - cancelling");
                 return;
             }
-
-
 
             // check job_table that: job exists, users is authorized, save job type
 
@@ -199,13 +197,19 @@ namespace as_get
                     return;
                 }
 
+
                 if (!GlobalVar.myGeneration.Equals(0))
                 {
+                    int nonZero = 0;
                     char[] buildChars;
                     buildChars = new char[350000];
 
                     for (int i = 0; i < GlobalVar.featureCount; i++)
+                    {
                         buildChars[i] = (char)GlobalVar.features[i, 0];
+                        if (GlobalVar.features[i, 0] > 0) nonZero++;
+
+                    }
 
                     string bs = new string(buildChars);
                     bs = bs.Substring(0, GlobalVar.featureCount);
@@ -213,6 +217,7 @@ namespace as_get
                     string fn = "";
                     fn = "mx" + Convert.ToString(myPopNumber);
                     File.WriteAllText(fn, bs);
+            //        Console.WriteLine("get main write pop " + myPopNumber + " " + nonZero);
                 }
 
                 // write out xml
@@ -246,9 +251,11 @@ namespace as_get
                 userProcess.StartInfo.FileName = "as_rtcmix.exe";
                 //                userProcess.StartInfo.FileName = "as_user.exe";  // dsm
                 userProcess.StartInfo.Arguments = XMLfile;
+        //        System.Threading.Thread.Sleep(100);
                 userProcess.Start();
                 userProcess.WaitForExit();
                 userProcess.Dispose();
+        //        System.Threading.Thread.Sleep(100);
 
                 // get updated XML (with score)
                 bool openXML = false;
@@ -460,10 +467,8 @@ namespace as_get
             insertCommand.Parameters.AddWithValue("@parmJob", GlobalVar.jobName);
             insertCommand.Parameters.AddWithValue("@parmAvg", avgGeneration);
             insertCommand.Parameters.AddWithValue("@parmTop", GlobalVar.bestScore);
-            //            insertCommand.Parameters.AddWithValue("@parmPossible", 515886062); //blue
-            //            insertCommand.Parameters.AddWithValue("@parmPossible", 820278363); //sine
-            insertCommand.Parameters.AddWithValue("@parmPossible", 713636118); //short
-            //    insertCommand.Parameters.AddWithValue("@parmPossible", (GlobalVar.featureCount*8));
+            insertCommand.Parameters.AddWithValue("@parmPossible", 5244525707); //short
+         //   insertCommand.Parameters.AddWithValue("@parmPossible", 3775640957); //short
             try
             {
                 insertCommand.ExecuteNonQuery();
@@ -726,18 +731,24 @@ namespace as_get
                 {
                     newIntValue = GlobalVar.random.Next(featureIntMin, featureIntMax);
                     GlobalVar.features[i, 0] = newIntValue;
-                    if ((GlobalVar.random.Next(0, 100) < 75))
-                        GlobalVar.features[i, 0] = 0; // dsm experiment start with half zero
+        //            if ((GlobalVar.random.Next(0, 100) < 75))
+        //                GlobalVar.features[i, 0] = 0; // dsm experiment start with half zero
                 }
 
+                int nonZero = 0;
                 for (int i = 0; i < GlobalVar.featureCount; i++)
+                {
                     buildChars[i] = (char)GlobalVar.features[i, 0];
+                    if (GlobalVar.features[i, 0] > 0) nonZero++;
 
+                }
                 string bs = new string(buildChars);
                 bs = bs.Substring(0, GlobalVar.featureCount);
 
                 fn = "mx" + Convert.ToString(popMember);
                 File.WriteAllText(fn, bs);
+    //            Console.WriteLine("get empty write pop " + popMember + " " + nonZero);
+
 
                 // this should be the right length
 
@@ -792,7 +803,7 @@ namespace as_get
                 }
 
                 Array.Resize(ref buildChars, GlobalVar.featureCount);
-
+                int nonZero = 0;
                 for (int i = 0; i < GlobalVar.featureCount; i++)
                 {
                     GlobalVar.features[i, parent] = buildChars[i];
@@ -801,7 +812,9 @@ namespace as_get
                         GlobalVar.features[i, parent] = 255;
                     if (GlobalVar.features[i, parent] < 0)
                         GlobalVar.features[i, parent] = 0;
+                    if (GlobalVar.features[i, parent] > 0) nonZero++;
                 }
+    //            Console.WriteLine("get existing read pop " + popMember + " " + parent + " " + nonZero);
 
             }
             catch (Exception e)
@@ -827,7 +840,7 @@ namespace as_get
             {
                 for (int fx = 0; fx < scoreFrames; fx++)
                 {
-                    GlobalVar.frameScore[fx, parent] = -999999999 / scoreFrames;
+                    GlobalVar.frameScore[fx, parent] = GlobalVar.frameScore[fx, 0] - 1;
                 }
             }
 
@@ -845,6 +858,7 @@ namespace as_get
             int[] mutateArray = new int[8] { 1, 2, 4, 8, 16, 32, 64, 128 };
             int mutatePosition = 0;
             int mutateValue = 0;
+            bool noMutation = false;
             int parentIndex = 0;
             int nextNeighbor = 0;
             int xP1 = 0;
@@ -917,6 +931,7 @@ namespace as_get
                 }
             }
 
+            if (xP1 == xP2) noMutation = true;
             // mutate here
             for (int i = 0; i < GlobalVar.featureCount; i++)
             {
@@ -924,6 +939,7 @@ namespace as_get
                 {
                     mutatePosition = GlobalVar.random.Next(0, 8);
                     mutateValue = mutateArray[mutatePosition];
+                    if (noMutation) mutateValue = 0;
                     if (GlobalVar.random.Next(0, 100) < 50)
                         mutateValue = -1 * mutateValue;
                     GlobalVar.features[i, 0] = GlobalVar.features[i, 0] + mutateValue;
