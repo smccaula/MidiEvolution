@@ -14,7 +14,7 @@ namespace as_get
 {
     class as_get
     {
-        const int scoreFrames = 16;
+        const int scoreFrames = 1;
         public static class GlobalVar
         {
             public static int popCount = 0;
@@ -467,8 +467,9 @@ namespace as_get
             insertCommand.Parameters.AddWithValue("@parmJob", GlobalVar.jobName);
             insertCommand.Parameters.AddWithValue("@parmAvg", avgGeneration);
             insertCommand.Parameters.AddWithValue("@parmTop", GlobalVar.bestScore);
-            insertCommand.Parameters.AddWithValue("@parmPossible", 5244525707); //short
-         //   insertCommand.Parameters.AddWithValue("@parmPossible", 3775640957); //short
+    //        insertCommand.Parameters.AddWithValue("@parmPossible", 1070454177); //short
+                                                                                  
+           insertCommand.Parameters.AddWithValue("@parmPossible", 974823543); //short
             try
             {
                 insertCommand.ExecuteNonQuery();

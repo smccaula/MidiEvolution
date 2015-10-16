@@ -17,7 +17,7 @@ namespace as_rtcmix
         const int bytesPerEvent = 6;
         const double samplesSecond = 44100.0;
         const int maxSamples = 44100 * 30; // 30 seconds max
-        const int scoreFrames = 16;
+        const int scoreFrames = 1;
 
         public static class GlobalVar
         {
@@ -82,12 +82,13 @@ namespace as_rtcmix
 
             double freqInterval = 1.0014451;
 
-            GlobalVar.freqLookup[0] = 55.0;
-            for (int i = 1; i < (481); i++)
+            GlobalVar.freqLookup[0] = 0.0;
+            GlobalVar.freqLookup[1] = 55.0;
+            for (int i = 2; i < (482); i++)
             {
                 GlobalVar.freqLookup[i] = GlobalVar.freqLookup[i - 1] * freqInterval;
             }
-            for (int i = 480; i < (256 * 16); i++)
+            for (int i = 481; i < (256 * 16); i++)
             {
                 GlobalVar.freqLookup[i] = GlobalVar.freqLookup[i - 480] * 2;
             }
@@ -121,8 +122,8 @@ namespace as_rtcmix
             // at this point I have both wav files, and the rest of the process should be identical
 
 
-         //         Console.WriteLine("myScore: " + GlobalVar.myScore + " gs:" + GlobalVar.samples + " td:" + GlobalVar.totalDiff
-         //             + " pop-" + GlobalVar.popMember.ToString() + " gen-" + GlobalVar.myGeneration.ToString());
+      //            Console.WriteLine("myScore: " + GlobalVar.myScore + " gs:" + GlobalVar.samples + " td:" + GlobalVar.totalDiff
+      //                + " pop-" + GlobalVar.popMember.ToString() + " gen-" + GlobalVar.myGeneration.ToString());
 
 
             // write sx, mx and xml files, only on successful completion of process
@@ -175,8 +176,8 @@ namespace as_rtcmix
 
             for (int i = 0; i < GlobalVar.samples; i++)
             {
-                GlobalVar.sampleDiff[i] = (32 * 1024) + (Math.Abs(GlobalVar.targetWav[i]));
-                GlobalVar.totalDiff = GlobalVar.totalDiff + GlobalVar.sampleDiff[i];  // worst is mirror
+                GlobalVar.sampleDiff[i] = 3 * Math.Abs(GlobalVar.targetWav[i]); // mirror + energy diff
+                GlobalVar.totalDiff = GlobalVar.totalDiff + GlobalVar.sampleDiff[i];  
             }
 
             for (int fx = 0; fx < scoreFrames; fx++)
@@ -186,7 +187,7 @@ namespace as_rtcmix
                 int endX = startX + (GlobalVar.samples / scoreFrames);
                 for (int sx = startX; sx < endX; sx++)
                 {
-                    GlobalVar.potentialDiff[fx] = GlobalVar.potentialDiff[fx] + (32 * 1024) + (Math.Abs(GlobalVar.targetWav[sx]));
+                    GlobalVar.potentialDiff[fx] = GlobalVar.potentialDiff[fx] + ( 3 * (Math.Abs(GlobalVar.targetWav[sx])));
                 }
             }
 
@@ -239,7 +240,7 @@ namespace as_rtcmix
             double tempFreq = 0.0;
             double tempPan = 0.0;
             double tempAmp = 0.0;
-            bool playFeature = true; // disabled for now
+            bool playFeature = false; // disabled for now
 
             GlobalVar.scoreLines = 0;
             //loop through events
@@ -277,7 +278,7 @@ namespace as_rtcmix
                 if (tempAmp > 32767) tempAmp = tempAmp - 32768;
                 if (tempAmp > 16383) tempAmp = tempAmp - 16384;
                 if (tempAmp > 8191) tempAmp = tempAmp - 8192;
-                if (tempAmp > 4095) tempAmp = tempAmp - 4096;
+       //         if (tempAmp > 4095) tempAmp = tempAmp - 4096;
                 tempPan = 0;
 
      //           int genX = GlobalVar.myGeneration * 4;
@@ -285,12 +286,12 @@ namespace as_rtcmix
 
             //    if (tempFreq > genX) playFeature = false; // test DSM
 
-                if ((playFeature) && (tempAmp > 0) && (tempDur > 0))
+                if ((playFeature) && (tempAmp > 0) && (tempFreq > 0) && (tempDur > 0))
                 {
                     GlobalVar.scoreLines++;
                     scoreText.WriteLine("WAVETABLE("
                         + Convert.ToString(tempStart) + "," // 0.00 to end time (1 bytes)
-                        + Convert.ToString(tempDur / 2048.00) + "," // 0.00 to 0.25 (1 byte)
+                        + Convert.ToString(tempDur / 1024.00) + "," // 0.00 to 0.25 (1 byte)
                         + Convert.ToString(tempAmp) + "," // 0 to ... (2 bytes)
                         + Convert.ToString(tempFreq) + "," // 0 to 20,500 (2 bytes)
                         + Convert.ToString(tempPan) + ",wavet)"); // 0.00 (mono)
@@ -364,17 +365,19 @@ namespace as_rtcmix
         static long AlternateScore(int startX, int endX)
         {
             long runningScore = 0;
-            int nonZero = 0;
-            long worst = 0;
+            long targetEnergy = 0;
+            long calcEnergy = 0;
+            long scoreEnergy = 0;
+
             for (int i = startX; i < endX; i++)
             {
-                if (GlobalVar.calcWav[i] != 0) nonZero++;
-                worst = worst + 2 * Math.Abs(GlobalVar.targetWav[i]);
+                targetEnergy = targetEnergy + Math.Abs(GlobalVar.targetWav[i]);
+                calcEnergy = targetEnergy + Math.Abs(GlobalVar.calcWav[i]);
                 runningScore = runningScore + (Math.Abs(GlobalVar.targetWav[i] - GlobalVar.calcWav[i]));
             }
-            if (nonZero < 1) runningScore = worst;
-            if (GlobalVar.scoreLines < 1) runningScore = worst;
-            return (runningScore);
+
+            scoreEnergy = Math.Abs(targetEnergy - calcEnergy);
+            return (runningScore + scoreEnergy);
         }
 
         static void WriteBestFile()
