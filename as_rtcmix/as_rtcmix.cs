@@ -122,8 +122,8 @@ namespace as_rtcmix
             // at this point I have both wav files, and the rest of the process should be identical
 
 
-      //            Console.WriteLine("myScore: " + GlobalVar.myScore + " gs:" + GlobalVar.samples + " td:" + GlobalVar.totalDiff
-      //                + " pop-" + GlobalVar.popMember.ToString() + " gen-" + GlobalVar.myGeneration.ToString());
+//                  Console.WriteLine("myScore: " + GlobalVar.myScore + " gs:" + GlobalVar.samples + " td:" + GlobalVar.totalDiff
+//                      + " pop-" + GlobalVar.popMember.ToString() + " gen-" + GlobalVar.myGeneration.ToString());
 
 
             // write sx, mx and xml files, only on successful completion of process
@@ -177,7 +177,12 @@ namespace as_rtcmix
             for (int i = 0; i < GlobalVar.samples; i++)
             {
                 GlobalVar.sampleDiff[i] = 3 * Math.Abs(GlobalVar.targetWav[i]); // mirror + energy diff
-                GlobalVar.totalDiff = GlobalVar.totalDiff + GlobalVar.sampleDiff[i];  
+                if (i > 0)
+                {
+                    GlobalVar.sampleDiff[i] = GlobalVar.sampleDiff[i] + 
+                        (2 * (Math.Abs(GlobalVar.targetWav[i] - GlobalVar.targetWav[i - 1])));
+                }
+                GlobalVar.totalDiff = GlobalVar.totalDiff + GlobalVar.sampleDiff[i];
             }
 
             for (int fx = 0; fx < scoreFrames; fx++)
@@ -188,6 +193,11 @@ namespace as_rtcmix
                 for (int sx = startX; sx < endX; sx++)
                 {
                     GlobalVar.potentialDiff[fx] = GlobalVar.potentialDiff[fx] + ( 3 * (Math.Abs(GlobalVar.targetWav[sx])));
+                    if (sx > 0)
+                    {
+                        GlobalVar.potentialDiff[fx] = GlobalVar.potentialDiff[fx] +
+                            (2 * (Math.Abs(GlobalVar.targetWav[sx] - GlobalVar.targetWav[sx - 1])));
+                    }
                 }
             }
 
@@ -362,12 +372,33 @@ namespace as_rtcmix
         }
 
 
-        static long AlternateScore(int startX, int endX)
+        static long DeltaScore(int startX, int endX)
+        {
+            int targetUp = 1;
+            int calcUp = 1;
+            
+            long runningScore = 0;
+            for (int i = startX; i < endX; i++)
+            {
+                if (GlobalVar.targetWav[i] < GlobalVar.targetWav[i - 1]) targetUp = 0;
+                if (GlobalVar.calcWav[i] < GlobalVar.calcWav[i - 1]) calcUp = 0;
+                if (targetUp.Equals(calcUp))
+                    runningScore = runningScore + (Math.Abs((GlobalVar.targetWav[i] - GlobalVar.targetWav[i - 1]) - 
+                        (GlobalVar.calcWav[i] - GlobalVar.calcWav[i-1])));
+                if (!targetUp.Equals(calcUp))
+                    runningScore = runningScore + (Math.Abs(GlobalVar.targetWav[i] - GlobalVar.targetWav[i - 1]))
+                        + Math.Abs(GlobalVar.calcWav[i] - GlobalVar.calcWav[i-1]);
+            }
+            return (runningScore);
+        }
+
+            static long AlternateScore(int startX, int endX)
         {
             long runningScore = 0;
             long targetEnergy = 0;
             long calcEnergy = 0;
             long scoreEnergy = 0;
+            long deltaScore = 0;
 
             for (int i = startX; i < endX; i++)
             {
@@ -377,7 +408,8 @@ namespace as_rtcmix
             }
 
             scoreEnergy = Math.Abs(targetEnergy - calcEnergy);
-            return (runningScore + scoreEnergy);
+            deltaScore = DeltaScore(startX+1,endX);
+            return (runningScore + scoreEnergy + deltaScore);
         }
 
         static void WriteBestFile()

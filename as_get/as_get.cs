@@ -467,9 +467,9 @@ namespace as_get
             insertCommand.Parameters.AddWithValue("@parmJob", GlobalVar.jobName);
             insertCommand.Parameters.AddWithValue("@parmAvg", avgGeneration);
             insertCommand.Parameters.AddWithValue("@parmTop", GlobalVar.bestScore);
-    //        insertCommand.Parameters.AddWithValue("@parmPossible", 1070454177); //short
+            insertCommand.Parameters.AddWithValue("@parmPossible", 1183871059); //short
                                                                                   
-           insertCommand.Parameters.AddWithValue("@parmPossible", 974823543); //short
+    //       insertCommand.Parameters.AddWithValue("@parmPossible", 1116685935); //short
             try
             {
                 insertCommand.ExecuteNonQuery();
