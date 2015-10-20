@@ -30,7 +30,7 @@ namespace as_get
             public static long bestScore = -999999999;
             public static int MutPer100Members = 100;
             public static int normalMut = 50;
-            public static int alternateMut = 250;
+            public static int alternateMut = 350;
             public static int xoverType = 0;
             public static int parentDist = 20;
             public static long[,] frameScore = new long[scoreFrames, 11];
@@ -467,9 +467,11 @@ namespace as_get
             insertCommand.Parameters.AddWithValue("@parmJob", GlobalVar.jobName);
             insertCommand.Parameters.AddWithValue("@parmAvg", avgGeneration);
             insertCommand.Parameters.AddWithValue("@parmTop", GlobalVar.bestScore);
-            insertCommand.Parameters.AddWithValue("@parmPossible", 1183871059); //short
-                                                                                  
-    //       insertCommand.Parameters.AddWithValue("@parmPossible", 1116685935); //short
+//                        insertCommand.Parameters.AddWithValue("@parmPossible", 1183871059); //short
+            insertCommand.Parameters.AddWithValue("@parmPossible", 1159303503); //short
+//            insertCommand.Parameters.AddWithValue("@parmPossible", 141398539); //short
+
+            //       insertCommand.Parameters.AddWithValue("@parmPossible", 1116685935); //short
             try
             {
                 insertCommand.ExecuteNonQuery();
@@ -732,8 +734,8 @@ namespace as_get
                 {
                     newIntValue = GlobalVar.random.Next(featureIntMin, featureIntMax);
                     GlobalVar.features[i, 0] = newIntValue;
-        //            if ((GlobalVar.random.Next(0, 100) < 75))
-        //                GlobalVar.features[i, 0] = 0; // dsm experiment start with half zero
+                    if ((GlobalVar.random.Next(0, 100) < 75))
+                        GlobalVar.features[i, 0] = 0; // dsm experiment start with half zero
                 }
 
                 int nonZero = 0;

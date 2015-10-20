@@ -22,7 +22,8 @@ namespace as_rtcmix
         public static class GlobalVar
         {
             public static int endTime = 0;
-            public static int eventsThisRun = 1024;
+            public static int eventsThisRun = 16384;
+   //         public static int eventsThisRun = 64;
             public static int featureCount = (bytesPerEvent * eventsThisRun);
             public static int[] features = new int[350000];
             public static string arg0 = "";
@@ -118,12 +119,19 @@ namespace as_rtcmix
         static void OutputAllFiles(string XMLfile)
         {
             GlobalVar.myScore = (GlobalVar.totalDiff - AlternateScore(0, GlobalVar.samples));
+            String logFile = Convert.ToString(GlobalVar.popMember) + ".log";
+            using (StreamWriter sw = File.AppendText(logFile))
+            {
+                sw.WriteLine("Score : " + GlobalVar.myScore.ToString() + " of " + GlobalVar.totalDiff.ToString());
+            }
+
+
 
             // at this point I have both wav files, and the rest of the process should be identical
 
 
-//                  Console.WriteLine("myScore: " + GlobalVar.myScore + " gs:" + GlobalVar.samples + " td:" + GlobalVar.totalDiff
-//                      + " pop-" + GlobalVar.popMember.ToString() + " gen-" + GlobalVar.myGeneration.ToString());
+            //                  Console.WriteLine("myScore: " + GlobalVar.myScore + " gs:" + GlobalVar.samples + " td:" + GlobalVar.totalDiff
+            //                      + " pop-" + GlobalVar.popMember.ToString() + " gen-" + GlobalVar.myGeneration.ToString());
 
 
             // write sx, mx and xml files, only on successful completion of process
@@ -232,13 +240,19 @@ namespace as_rtcmix
             }
 
             StreamWriter scoreText = new StreamWriter(scoreFile);
-            scoreText.WriteLine("set_option(\"audio = off\", \"play = off\", \"fast_update = on\",  \"clobber = on\")");
+            scoreText.WriteLine("set_option(\"audio = off\", \"play = off\", \"clobber = on\")");
             scoreText.WriteLine("rtsetparams(44100, 1)");
             scoreText.WriteLine("rtoutput(\"" + wavFile + "\")");
             scoreText.WriteLine("reset(44100)");
             scoreText.WriteLine("load(\"WAVETABLE\")");
-            scoreText.WriteLine("wavet = maketable(\"wave\", 5000, \"sine\")");
-            scoreText.WriteLine("note_env = maketable(\"line\", 5000, 0,0, 1,1, 2,1, 3,1, 4,0)");
+            scoreText.WriteLine("waves = maketable(\"wave\", 5000, \"sine\")");
+            scoreText.WriteLine("wavet = maketable(\"wave\", 5000, \"tri\")");
+            scoreText.WriteLine("wavew = maketable(\"wave\", 5000, \"saw\")");
+            scoreText.WriteLine("waveq = maketable(\"wave\", 5000, \"square\")");
+            scoreText.WriteLine("env1 = maketable(\"line\", 5000, 0,0, 1,1, 2,0)");
+            scoreText.WriteLine("env2 = maketable(\"line\", 5000, 0,0, 1,1, 2,1, 3,0)");
+            scoreText.WriteLine("env3 = maketable(\"line\", 5000, 0,0, 1,1, 2,1, 3,1, 4,0)");
+            scoreText.WriteLine("env4 = maketable(\"line\", 5000, 0,0, 1,1, 2,1, 3,1, 4,1, 5,0)");
 
             bool MoreEvents = true;
             int eventX = 0;
@@ -250,12 +264,23 @@ namespace as_rtcmix
             double tempFreq = 0.0;
             double tempPan = 0.0;
             double tempAmp = 0.0;
-            bool playFeature = false; // disabled for now
+            bool fb7 = false;
+            bool fb6 = false;
+            bool ab8 = false;
+            bool ab7 = false;
+            bool playFeature = false;
+            string waveName = "waves";
+            string envName = "env1";
 
             GlobalVar.scoreLines = 0;
             //loop through events
             while (MoreEvents)
             {
+                fb6 = false;
+                fb7 = false;
+                ab7 = false;
+                ab8 = false;
+
                 // check for conditions such as 0 dur or 0 freq
 
                 //                tempStart = (eventX * GlobalVar.endTime) / GlobalVar.eventsThisRun;
@@ -270,7 +295,7 @@ namespace as_rtcmix
                 tempStart = tempStart + tempOffset;
 
 
-                tempDur = GlobalVar.CMIXdur[eventX] * 1.0;
+                tempDur = GlobalVar.CMIXdur[eventX] / 4096.0;
             //    tempFreq = GlobalVar.freqLookup[GlobalVar.CMIXfreq[eventX]];
             //    tempAmp = (GlobalVar.CMIXamp[eventX] * 1024) / 256; // dsm too coarse?
 
@@ -280,31 +305,63 @@ namespace as_rtcmix
                     freqNDX = freqNDX - 32768;
                     playFeature = true;
                 }
-                if (freqNDX > 16383) freqNDX = freqNDX - 16384;
-                if (freqNDX > 8191) freqNDX = freqNDX - 8192;
+                if (freqNDX > 16383)
+                {
+                    freqNDX = freqNDX - 16384;
+                    fb7 = true;
+                }
+                if (freqNDX > 8191)
+                {
+                    freqNDX = freqNDX - 8192;
+                    fb6 = true;
+                }
                 if (freqNDX > 4095) freqNDX = freqNDX - 4096;
                 tempFreq = GlobalVar.freqLookup[freqNDX];
+                if (fb6 == true)
+                    waveName = "wavet";
+                if (fb7 == true)
+                    waveName = "wavew";
+                if ((fb6 == true) && (fb7 == true))
+                    waveName = "waveq";
+
                 tempAmp = GlobalVar.CMIXamp[eventX];  
-                if (tempAmp > 32767) tempAmp = tempAmp - 32768;
-                if (tempAmp > 16383) tempAmp = tempAmp - 16384;
+                if (tempAmp > 32767)
+                {
+                    tempAmp = tempAmp - 32768;
+                    ab8 = true;
+                }
+                if (tempAmp > 16383)
+                {
+                    tempAmp = tempAmp - 16384;
+                    ab7 = true;
+                }
                 if (tempAmp > 8191) tempAmp = tempAmp - 8192;
-       //         if (tempAmp > 4095) tempAmp = tempAmp - 4096;
+                if (tempAmp > 4095) tempAmp = tempAmp - 4096;
+//                if (tempAmp > 2047) tempAmp = tempAmp - 2048;
+//                if (tempAmp > 1023) tempAmp = tempAmp - 1024;
+//                if (tempAmp > 511) tempAmp = tempAmp - 512;
+                if (ab7)
+                    envName = "env2";
+                if (ab8)
+                    envName = "env3";
+                if (ab7 && ab8)
+                    envName = "env4";
+
                 tempPan = 0;
 
-     //           int genX = GlobalVar.myGeneration * 4;
-     //           if (GlobalVar.myGeneration < 55) genX = 220;
-
-            //    if (tempFreq > genX) playFeature = false; // test DSM
+                if ((tempStart + tempDur) > tempLength)
+                    tempAmp = 0;  //  don't play past the end of the target file
 
                 if ((playFeature) && (tempAmp > 0) && (tempFreq > 0) && (tempDur > 0))
                 {
                     GlobalVar.scoreLines++;
                     scoreText.WriteLine("WAVETABLE("
-                        + Convert.ToString(tempStart) + "," // 0.00 to end time (1 bytes)
-                        + Convert.ToString(tempDur / 1024.00) + "," // 0.00 to 0.25 (1 byte)
-                        + Convert.ToString(tempAmp) + "," // 0 to ... (2 bytes)
-                        + Convert.ToString(tempFreq) + "," // 0 to 20,500 (2 bytes)
-                        + Convert.ToString(tempPan) + ",wavet)"); // 0.00 (mono)
+                        + Convert.ToString(tempStart) + "," 
+                        + Convert.ToString(tempDur) + "," + envName + "*"
+//                        + Convert.ToString(tempDur) + ","
+                        + Convert.ToString(tempAmp) + "," 
+                        + Convert.ToString(tempFreq) + "," 
+                        + Convert.ToString(tempPan) + "," + waveName + ")"); 
                 }
 
                 eventX++;
