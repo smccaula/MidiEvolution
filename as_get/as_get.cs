@@ -78,7 +78,7 @@ namespace as_get
             MySqlConnection myConnection;
 
             connectionString = "SERVER=rdc04.uits.iu.edu" + ";" + "Port=3059" + ";" + "DATABASE=agent" +
-                ";" + "UID=agentx" + ";" + "PASSWORD=mysqlX666" + ";" + "pooling=false" + ";" +
+                ";" + "UID=agentx" + ";" + "PASSWORD=************" + ";" + "pooling=false" + ";" +
                 "default command timeout=5" + ";";
 
             myConnection = new MySqlConnection(connectionString);
@@ -467,9 +467,9 @@ namespace as_get
             insertCommand.Parameters.AddWithValue("@parmJob", GlobalVar.jobName);
             insertCommand.Parameters.AddWithValue("@parmAvg", avgGeneration);
             insertCommand.Parameters.AddWithValue("@parmTop", GlobalVar.bestScore);
-//                        insertCommand.Parameters.AddWithValue("@parmPossible", 1183871059); //short
-            insertCommand.Parameters.AddWithValue("@parmPossible", 1159303503); //short
-//            insertCommand.Parameters.AddWithValue("@parmPossible", 141398539); //short
+ //                       insertCommand.Parameters.AddWithValue("@parmPossible", 1183871059); //short
+//            insertCommand.Parameters.AddWithValue("@parmPossible", 1159303503); //short
+            insertCommand.Parameters.AddWithValue("@parmPossible", 141398539); //short
 
             //       insertCommand.Parameters.AddWithValue("@parmPossible", 1116685935); //short
             try

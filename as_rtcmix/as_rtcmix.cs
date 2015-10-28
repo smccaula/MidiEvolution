@@ -22,8 +22,8 @@ namespace as_rtcmix
         public static class GlobalVar
         {
             public static int endTime = 0;
-            public static int eventsThisRun = 16384;
-   //         public static int eventsThisRun = 64;
+   //         public static int eventsThisRun = 16384;
+            public static int eventsThisRun = 4096;
             public static int featureCount = (bytesPerEvent * eventsThisRun);
             public static int[] features = new int[350000];
             public static string arg0 = "";
@@ -276,6 +276,8 @@ namespace as_rtcmix
             //loop through events
             while (MoreEvents)
             {
+                waveName = "waves";
+                envName = "env1";
                 fb6 = false;
                 fb7 = false;
                 ab7 = false;
@@ -335,8 +337,8 @@ namespace as_rtcmix
                     tempAmp = tempAmp - 16384;
                     ab7 = true;
                 }
-                if (tempAmp > 8191) tempAmp = tempAmp - 8192;
-                if (tempAmp > 4095) tempAmp = tempAmp - 4096;
+//                if (tempAmp > 8191) tempAmp = tempAmp - 8192;
+//                if (tempAmp > 4095) tempAmp = tempAmp - 4096;
 //                if (tempAmp > 2047) tempAmp = tempAmp - 2048;
 //                if (tempAmp > 1023) tempAmp = tempAmp - 1024;
 //                if (tempAmp > 511) tempAmp = tempAmp - 512;

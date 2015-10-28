@@ -14,7 +14,7 @@ namespace test_mysql
             MySqlConnection connection;
 
             connectionString = "SERVER=rdc04.uits.iu.edu" + ";" + "Port=3059" +  ";" + "DATABASE=agent" +
-        ";" + "UID=smccaula" + ";" + "PASSWORD=mysqlX666" + ";";
+        ";" + "UID=smccaula" + ";" + "PASSWORD=************" + ";";
 
             connection = new MySqlConnection(connectionString);
 

@@ -45,7 +45,7 @@ namespace as_clear
             MySqlConnection myConnection;
 
             connectionString = "SERVER=rdc04.uits.iu.edu" + ";" + "Port=3059" + ";" + "DATABASE=agent" +
-        ";" + "UID=agentx" + ";" + "PASSWORD=mysqlX666" + ";";
+        ";" + "UID=agentx" + ";" + "PASSWORD=************" + ";";
 
             myConnection = new MySqlConnection(connectionString);
 
